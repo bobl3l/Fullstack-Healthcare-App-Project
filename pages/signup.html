@@ -14,7 +14,7 @@
     <div class="login">
       <h1>Doctor APP</h1>
 
-      <form class="login-form" action="" method="post">
+      <form class="login-form" action="/register" method="post">
         <h2>Sign up</h2>
         <!-- user input-->
         Username:<br />
@@ -22,6 +22,20 @@
           type="text"
           name="username"
           placeholder="Username"
+          required
+        /><br /><br />
+        Name:<br />
+        <input
+          type="text"
+          name="name"
+          placeholder="Your name"
+          required
+        /><br /><br />
+        Role:<br />
+        <input
+          type="text"
+          name="role"
+          placeholder="Your role"
           required
         /><br /><br />
         Password:<br />
@@ -34,8 +48,8 @@
         Re-enter Password:<br />
         <input
           type="password"
-          name="password"
-          placeholder="Password"
+          name=""
+          placeholder="Reenter Password"
           required
         /><br /><br />
         <!-- submit button -->
