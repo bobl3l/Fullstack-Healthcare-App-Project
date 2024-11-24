@@ -1,0 +1,64 @@
+body {
+  background-color: gainsboro;
+}
+
+.login-form {
+  background-color: white;
+  padding: 20px;
+  border-radius: 16px;
+}
+.login input {
+  width: 100%;
+  padding: 12px 20px;
+  border-radius: 8px;
+  border: none;
+  margin: 8px 0;
+}
+
+.login input[type="text"],
+input[type="password"] {
+  width: 90%;
+  background-color: rgb(235, 235, 235);
+}
+.login input[type="submit"] {
+  background-color: darkcyan;
+  color: white;
+  border: none;
+  cursor: pointer;
+  opacity: 0.8;
+  transition: opacity 0.3s;
+}
+
+.login input[type="submit"]:hover {
+  opacity: 1;
+}
+
+.login {
+  max-width: 500px;
+  align-items: center;
+  font-family: "Open Sans", sans-serif;
+  font-optical-sizing: auto;
+  font-style: normal;
+  font-variation-settings: "wdth" 100;
+  margin: auto;
+}
+.login h1 {
+  text-align: center;
+  font-size: 5em;
+}
+.link {
+  text-align: center;
+  border: none;
+  width: 100%;
+  padding: auto;
+  display: flex;
+  background-color: white;
+  color: grey;
+  margin-top: 10px;
+  transition: 0.3s;
+  text-decoration: underline;
+}
+
+.link :hover {
+  background-color: lightgrey;
+}
