@@ -7,21 +7,25 @@ import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import { fileURLToPath } from "url";
 import consolidate from "consolidate";
-//import html files
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, "pages")));
-app.set("pages", __dirname + "/pages");
-app.engine("html", consolidate.mustache);
-app.set("view engine", "html");
+// app.set("pages", __dirname + "/pages");
+// app.engine("html", consolidate.mustache);
+// app.set("view engine", "html");
+app.set("views", "./pages");
+app.set("view engine", "ejs");
 connectDB();
 
+//page endpoints
 app.get("/", function (req, res) {
   res.render("../pages/index");
 });
@@ -47,7 +51,6 @@ app.get("/get-users", async (req, res) => {
 app.post("/login", async (req, res) => {
   const { username, password } = req.body;
   try {
-    // Find user by username
     const user = await UserModel.findOne({ username });
 
     if (!user) {
@@ -56,7 +59,7 @@ app.post("/login", async (req, res) => {
         .json({ message: "User could not be found. Try again." });
     }
 
-    // Compare provided password with stored hash
+    // Compare input pw with stored hash pw
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
@@ -70,8 +73,8 @@ app.post("/login", async (req, res) => {
       { expiresIn: "1h" }
     );
     console.log("User logged in successfully, token: " + token);
-    res.type("html");
-    res.status(200).redirect("/home");
+    //res.type("html");
+    res.status(200).render("home", { user: user });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal server error" });
@@ -101,6 +104,7 @@ app.post("/register", async (req, res) => {
   }
 });
 
+//user-logout endpoint
 app.post("/logout", (req, res) => {
   res.clearCookie("token");
   console.log("User logged out successfully");

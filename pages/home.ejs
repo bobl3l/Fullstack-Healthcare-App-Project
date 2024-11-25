@@ -13,6 +13,8 @@
   <body>
     <div class="dashboard">
       <h1>Dashboard</h1>
+      <p>Hello, <%= user.name %>!</p>
+      <p>Your role is: <%= user.role %></p>
       <button class="logout" onclick="openPop()">Log out</button>
       <div id="popupDialog">
         <p>Are you sure you want to logout?</p>
