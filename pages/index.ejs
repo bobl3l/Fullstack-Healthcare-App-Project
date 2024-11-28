@@ -17,11 +17,11 @@
       <form class="login-form" action="/login" method="post">
         <h2>Login</h2>
         <!-- user input-->
-        Username:<br />
+        Username/Email:<br />
         <input
           type="text"
           name="username"
-          placeholder="Username"
+          placeholder="Username/Email"
           required
         /><br /><br />
         Password:<br />
@@ -33,7 +33,13 @@
         /><br /><br />
         <!-- submit button -->
         <input type="submit" value="login" />
-        <a class="link" href="/signup">Don't have an account? Sign up here.</a>
+        <a class="link" href="/signup"
+          >Don't have an account?&nbsp;<span>Sign up here.</span></a
+        >
+        <br />
+        <a class="link" href="/passwordreset"
+          ><span>Forgot your password?</span></a
+        >
       </form>
     </div>
   </body>
