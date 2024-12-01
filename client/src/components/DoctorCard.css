@@ -1,0 +1,95 @@
+.info-card {
+  font-family: "Inter", sans-serif;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 16px;
+
+  text-align: center;
+  width: 16vw;
+  height: auto;
+  margin: 10px;
+  background: #fff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.info-card p {
+}
+
+.info-card-image {
+  width: 100%;
+  height: 20vh;
+  border-radius: 10px;
+  margin-bottom: 16px;
+}
+
+.info-card-name {
+  font-size: 18px;
+  margin: 8px 0;
+  font-weight: bolder;
+}
+
+.info-card-buttons {
+  display: flex;
+  justify-content: space-around;
+}
+
+.btn {
+  padding: 6px 10px;
+  margin: 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8vw;
+}
+
+.btn-info {
+  background-color: #17a2b8;
+  color: white;
+}
+
+.btn-primary {
+  background-color: #007bff;
+  color: white;
+}
+
+.btn-close {
+  background-color: #dc3545;
+  color: white;
+  height: 4vh;
+}
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  flex-direction: row;
+  display: flex;
+  text-align: left;
+  justify-content: space-between;
+}
+.modal-content img {
+  width: 50%;
+  height: 35vh;
+  border-radius: 10px;
+  margin-bottom: 16px;
+}
+.modal-content h1 {
+  font-weight: bold;
+  font-size: 2vw;
+}
+
+.modal-content p {
+  width: 40vw;
+}

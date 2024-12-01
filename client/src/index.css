@@ -1,0 +1,186 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url("https://fonts.googleapis.com/css2?family=Edu+AU+VIC+WA+NT+Pre:wght@400..700&family=Fjalla+One&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Sour+Gummy:ital,wght@0,300;1,300&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Edu+AU+VIC+WA+NT+Pre:wght@400..700&family=Fjalla+One&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Sour+Gummy:ital,wght@0,300;1,300&display=swap");
+body {
+  margin: 0;
+}
+
+logo {
+  font-family: "Fjalla One", sans-serif;
+  font-weight: 400;
+  font-style: bold;
+}
+nav ul {
+  padding: 10px;
+  display: flex;
+  justify-content: space-around;
+  margin: 0;
+}
+
+nav ul li {
+  list-style: none;
+}
+
+nav ul li a {
+  color: black;
+  text-decoration: none;
+  padding: 5px 10px;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+}
+
+nav ul li a:hover {
+  background-color: #555;
+}
+
+.gallery {
+  width: 98%;
+  margin: 20px auto;
+  text-align: center;
+  position: relative;
+}
+
+.gallery-container {
+  width: 100%;
+  height: 50em;
+  display: flex;
+  justify-content: center;
+  background-color: #f0f0f0;
+  border-radius: 16px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.gallery-image {
+  object-fit: cover;
+  transition: opacity 0.5s ease-in-out;
+}
+
+.gallery button {
+  margin-left: 0.5em;
+  margin-right: 0.5em;
+  padding: 10px 10px;
+  position: absolute;
+  top: 50%;
+  background-color: grey;
+  opacity: 0.4;
+  color: white;
+  border: none;
+  border-radius: 10em;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+}
+
+.gallery-controls button:hover {
+  background-color: #0056b3;
+}
+
+.panel {
+  padding: 8em;
+  justify-content: center;
+  font-family: "Inter", sans-serif;
+}
+
+.panel h1 {
+  font-weight: bold;
+  font-size: 2.5em;
+  color: #384959;
+}
+
+.panel p {
+  margin-right: 5em;
+  font-weight: 300;
+  font-size: 1.2em;
+}
+.panel img {
+  width: 25%;
+  height: 25%;
+  object-fit: cover;
+  border-radius: 100%;
+  border: 0.8em solid rgba(95, 158, 160, 0.279);
+}
+
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  grid-template-rows: repeat(auto-fill, auto);
+  gap: 2em;
+  padding: 4em;
+  justify-items: center;
+  align-items: center;
+}
+.grid-item {
+  display: flex;
+  width: 90%;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  background-color: #fff;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 1em;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.grid-item img {
+  width: 5em; /* Image size */
+  height: 5em;
+  object-fit: cover;
+  margin-bottom: 10px;
+  border-radius: 5px;
+  background-color: #fff;
+  border: none;
+}
+
+.grid-item p {
+  margin: 0;
+  font-size: 14px;
+  color: #333;
+}
+
+.doctor-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4em;
+  padding: 4em;
+  justify-items: center;
+  align-items: center;
+}
+
+.doctor-container {
+  display: flex;
+  width: 85%;
+  height: 23rem;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  background-color: #fff;
+  padding: 5px;
+  border: 1px solid #ddd;
+  border-radius: 1em;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.doctor-container img {
+  width: 100%; /* Image size */
+  height: 15rem;
+  object-fit: cover;
+  margin-bottom: 10px;
+  border-radius: 15px;
+  background-color: #fff;
+  border: none;
+}
+.doctor-container p {
+  margin: 10px 0;
+  font-size: 16px;
+  color: #333;
+}
+
+.doctor-container h3 {
+  margin: 15px 0;
+  font-size: 1rem;
+  color: #333;
+}

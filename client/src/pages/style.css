@@ -1,0 +1,309 @@
+body {
+  background-color: gainsboro;
+}
+
+.login-form {
+  background-color: white;
+  padding: 20px;
+  border-radius: 16px;
+  margin: 2%;
+}
+.login input {
+  width: 100%;
+  padding: 12px 20px;
+  border-radius: 8px;
+  border: none;
+  margin: 8px 0;
+}
+
+.login input[type="text"],
+input[type="password"] {
+  width: 100%;
+  background-color: rgb(235, 235, 235);
+}
+.login input[type="submit"] {
+  background-color: darkcyan;
+  color: white;
+  border: none;
+  cursor: pointer;
+  opacity: 0.8;
+  transition: opacity 0.3s;
+}
+
+.login input[type="submit"]:hover {
+  opacity: 1;
+}
+
+.login {
+  max-width: 500px;
+  align-items: center;
+  font-family: "Open Sans", sans-serif;
+  font-optical-sizing: auto;
+  font-style: normal;
+  font-variation-settings: "wdth" 100;
+  margin: auto;
+}
+.login h1 {
+  text-align: center;
+  font-size: 5em;
+  margin: 20% 10%;
+}
+.login h2 {
+  font-size: 1.5em;
+  font-weight: bold;
+  margin: 0.5em 0;
+}
+.link {
+  text-align: center;
+  border: none;
+  width: 100%;
+  padding: auto;
+  display: flex;
+  background-color: white;
+  color: grey;
+  margin-top: 10px;
+  transition: 0.3s;
+  text-decoration: none;
+}
+
+.link span {
+  text-decoration: underline;
+}
+
+.link :hover {
+  background-color: lightgrey;
+}
+
+.dashboard {
+  background-color: white;
+  padding: 20px;
+  border-radius: 32px;
+  max-width: 75%;
+  min-height: 80%;
+  margin-left: 10%;
+  margin-top: 10%;
+}
+
+.admin-button {
+  background-color: red;
+  color: white;
+  padding: 6px 10px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  opacity: 0.8;
+  height: 70%;
+  transition: opacity 0.3s;
+}
+
+.admin-button :hover {
+  opacity: 0.5;
+}
+.popupDialog {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  visibility: hidden;
+}
+.hidden {
+  display: none;
+}
+
+.custom-select {
+  width: 100%;
+  position: relative;
+}
+
+.custom-select::before,
+.custom-select::after {
+  --size: 0.3rem;
+  position: absolute;
+  content: "";
+  right: 1rem;
+  pointer-events: none;
+}
+
+.custom-select::before {
+  border-left: var(--size) solid transparent;
+  border-right: var(--size) solid transparent;
+  border-bottom: var(--size) solid grey;
+  top: 40%;
+}
+
+.custom-select::after {
+  border-left: var(--size) solid transparent;
+  border-right: var(--size) solid transparent;
+  border-top: var(--size) solid grey;
+  top: 55%;
+}
+
+select {
+  appearance: none;
+  background-color: transparent;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  border: none;
+  margin: 8px 0;
+  width: 98.7%;
+  font-family: inherit;
+  font-size: inherit;
+  cursor: inherit;
+  line-height: inherit;
+  z-index: 1;
+  outline: none;
+  color: grey;
+  background-color: rgb(235, 235, 235);
+}
+
+.admin-table {
+  width: 100%;
+  table-layout: fixed;
+  border-radius: 8px;
+}
+.admin-table th {
+  background-color: beige;
+  padding: 6px;
+}
+.admin-table td {
+  background-color: ghostwhite;
+}
+
+.admin-table td:last-of-type {
+  text-align: center;
+}
+
+.multiselect {
+  width: 100%;
+  position: relative;
+}
+
+.selectBox {
+  position: relative;
+}
+
+.selectBox select {
+  width: 100%;
+}
+
+.overSelect {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+}
+
+#checkboxes {
+  display: none;
+  border: 1px #dadada solid;
+}
+
+#checkboxes label {
+  display: block;
+}
+
+#checkboxes label:hover {
+  background-color: #1e90ff;
+}
+
+.error {
+  color: red;
+  font-size: 0.9em;
+}
+
+.success {
+  color: green;
+  font-size: 0.9em;
+}
+
+.appointment-list {
+  max-width: 600px;
+  margin: 20px auto;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.appointment-list h1 {
+  text-align: center;
+  margin-bottom: 20px;
+  font-weight: bolder;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+.appointment-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+.appointment-item:last-child {
+  border-bottom: none;
+}
+
+.appointment-actions button {
+  margin-left: 8px;
+}
+
+.btn {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-edit {
+  background-color: #007bff;
+  color: #fff;
+}
+
+.btn-cancel {
+  background-color: #dc3545;
+  color: #fff;
+}
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content-small {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  width: 400px;
+  max-width: 90%;
+}
+
+.modal-buttons {
+  margin-top: 20px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.btn-primary {
+  background-color: #28a745;
+  color: #fff;
+}
