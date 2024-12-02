@@ -36,7 +36,7 @@ router.post("/forgot-password", async (req, res) => {
       from: "ballbebee@gmail.com",
       to: email,
       subject: "Password Reset",
-      text: `Click the following link to reset your password: http://localhost:3000/pw/reset-password/${token}`,
+      text: `Click the following link to reset your password: http://localhost:5000/pw/reset-password/${token}`,
     };
     transporter.sendMail(mailOptions, (error, info) => {
       if (error) {

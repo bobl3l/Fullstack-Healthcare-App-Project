@@ -7,11 +7,13 @@ import {
   MenuItem,
   MenuItems,
 } from "@headlessui/react";
-import { Bars3Icon, BellIcon, XMarkIcon } from "@heroicons/react/24/outline";
-import { useLocation } from "react-router-dom";
+import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
+import { useLocation, useNavigate } from "react-router-dom";
 import "../index.css";
-import React, { useState, useEffect } from "react";
+import axios from "axios";
+import React, { useState, useEffect, useContext } from "react";
 import Logo from "../components/logo";
+import { AuthContext } from "./AuthContext";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
@@ -23,21 +25,26 @@ export default function NavBar() {
     { name: "Doctors", href: "/doctor" },
     { name: "Appointments", href: "/appointments" },
   ];
+  const [isLoggedIn, setIsLoggedIn] = useContext(AuthContext);
+  const [isPromptOpen, setPromptOpen] = useState(false);
 
-  const [currentUser, setCurrentUser] = useState(null);
-
-  // useEffect(() => {
-  //   fetch("/me", {
-  //     credentials: "include",
-  //   }).then((res) => {
-  //     if (res.ok) {
-  //       res.json().then((user) => {
-  //         setCurrentUser(user);
-  //       });
-  //     }
-  //   });
-  // }, []);
   const location = useLocation();
+  const navigate = useNavigate();
+  function logOut() {
+    axios
+      .post("http://localhost:5000/logout")
+      .then(function (response) {
+        if (response.status === 200) {
+          setIsLoggedIn(false);
+          navigate("/");
+          setPromptOpen(false);
+        } else {
+          console.log("Login failed.");
+        }
+      })
+      .catch((err) => console.log(err));
+  }
+
   return (
     <Disclosure as="nav" className="border-b-2 border-neutral-300 bg-slate-100">
       <div className="mx-auto max-w-8xl px-2 sm:px-6 lg:px-8">
@@ -83,7 +90,7 @@ export default function NavBar() {
           </div>
           <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
             {/* Profile dropdown */}
-            {currentUser ? (
+            {isLoggedIn ? (
               <Menu as="div" className="relative ml-3">
                 <div>
                   <MenuButton className="relative flex rounded-full bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800">
@@ -91,7 +98,7 @@ export default function NavBar() {
                     <span className="sr-only">Open user menu</span>
                     <img
                       alt=""
-                      src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+                      src="https://static-00.iconduck.com/assets.00/profile-major-icon-1024x1024-9rtgyx30.png"
                       className="size-8 rounded-full"
                     />
                   </MenuButton>
@@ -102,26 +109,20 @@ export default function NavBar() {
                 >
                   <MenuItem>
                     <a
-                      href="#"
+                      href="/profile"
+                      onClick={() => navigate("/profile")}
                       className="block px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100 data-[focus]:outline-none"
                     >
                       Your Profile
                     </a>
                   </MenuItem>
+
                   <MenuItem>
                     <a
-                      href="#"
+                      onClick={() => setPromptOpen(true)}
                       className="block px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100 data-[focus]:outline-none"
                     >
-                      Settings
-                    </a>
-                  </MenuItem>
-                  <MenuItem>
-                    <a
-                      href="#"
-                      className="block px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100 data-[focus]:outline-none"
-                    >
-                      Sign out
+                      Log out
                     </a>
                   </MenuItem>
                 </MenuItems>
@@ -138,6 +139,28 @@ export default function NavBar() {
           </div>
         </div>
       </div>
+      {/* Logout Modal */}
+      {isPromptOpen && (
+        <div className="modal">
+          <div className="bg-white text-center p-6 rounded-md">
+            <div className="m-4 font-bold text-xl">
+              <h1>Logout now?</h1>
+            </div>
+            <div className="flex-row flex">
+              <button
+                onClick={() => setPromptOpen(false)}
+                className="btn btn-cancel"
+              >
+                Close
+              </button>
+              <button onClick={() => logOut()} className="btn btn-close">
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <DisclosurePanel className="sm:hidden">
         <div className="space-y-1 px-2 pb-3 pt-2">
           {navigation.map((item) => (

@@ -1,34 +1,39 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import "./style.css";
 import Logo from "../components/logo";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../components/AuthContext";
 const Login = () => {
   const navigate = useNavigate();
   const [post, setPost] = useState({
     username: "",
     password: "",
   });
+  const [isLoggedIn, setIsLoggedIn] = useContext(AuthContext);
   const handleInput = (event) => {
     const { name, value } = event.target;
     setPost({ ...post, [name]: value });
   };
-
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
     console.log(post);
-    axios
+    await axios
       .post("http://localhost:5000/login", post)
       .then(function (response) {
         if (response.status === 200) {
-          // Navigate to success page
-          navigate("/");
+          setIsLoggedIn(true);
         } else {
           console.log("Login failed.");
         }
       })
       .catch((err) => console.log(err));
   }
+  useEffect(() => {
+    if (isLoggedIn) {
+      navigate("/");
+    }
+  }, [isLoggedIn, navigate]);
 
   return (
     <div className="login">

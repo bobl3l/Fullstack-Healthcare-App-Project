@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import "./style.css";
+import { AuthContext } from "../components/AuthContext";
 
 const Appointments = () => {
   const [appointments, setAppointments] = useState([
@@ -9,7 +10,7 @@ const Appointments = () => {
   ]);
 
   const [editingAppointment, setEditingAppointment] = useState(null);
-  const [currentUser, setCurrentUser] = useState(null);
+  const [isLoggedIn] = useContext(AuthContext);
 
   // Handle edit submission
   const handleEditSubmit = (id, updatedDate, updatedTime) => {
@@ -34,7 +35,7 @@ const Appointments = () => {
     <div className="appointment-list">
       <h1>Your Appointments</h1>
 
-      {!currentUser ? (
+      {isLoggedIn ? (
         <p className="text-center">
           You need to sign in to view your appointments.
         </p>

@@ -6,6 +6,8 @@ const PatientSchema = new mongoose.Schema({
   name: { type: String, required: true },
   age: { type: String, required: true },
   allergy: { type: Array },
+  appointments: { type: Array },
+  profile: { type: String },
 });
 
 // Export model

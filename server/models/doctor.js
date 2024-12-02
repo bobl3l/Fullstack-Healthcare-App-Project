@@ -6,9 +6,10 @@ const DoctorSchema = new mongoose.Schema({
   name: { type: String, required: true },
   specialization: { type: String, required: true },
   experience: { type: String, required: true },
-  applications: { type: String },
   approval: { type: String, required: true },
+  details: { type: String },
   appointments: { type: Array },
+  profile: { type: String },
 });
 
 // Export model

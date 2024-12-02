@@ -13,7 +13,8 @@ import cookieParser from "cookie-parser";
 import adminRouter from "./routes/adminapi.js";
 import router from "./pwreset.js";
 import cors from "cors";
-
+import session from "express-session";
+dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const app = express();
@@ -26,77 +27,26 @@ if (process.env.NODE_ENV === "production") {
     res.sendFile(path.join(__dirname, "client/build", "index.html"));
   });
 }
-
-dotenv.config();
-const allergies = [
-  "Antibiotics",
-  "NSAIDs",
-  "Sulfa drugs",
-  "Antiseizure medications",
-  "pain medications",
-  "ACE inhibitors",
-  "contrast dyes",
-  "chemotherapy drugs",
-  "HIV drugs",
-  "Insulin",
-  "Herval medicines",
-  "Moluscs",
-  "Eggs",
-  "Fish",
-  "Lupin",
-  "Soya",
-  "Milk",
-  "Peanuts",
-  "Gluten",
-  "Crustaceans",
-  "Mustard",
-  "Nuts",
-  "Sesame",
-  "Celery",
-  "Sulphintes",
-];
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(express.static(path.join(__dirname, "pages")));
 app.use(cookieParser());
-app.use(cors());
-app.set("views", "./pages");
-app.set("view engine", "ejs");
+
 app.use("/admin", adminRouter);
 app.use("/pw", router);
-app.use(function (req, res, next) {
-  res.set(
-    "Cache-Control",
-    "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0"
-  );
-  next();
-});
+app.use(
+  session({
+    secret: "your_jwt_secret", // Replace with a secure key
+    resave: false, // Avoid saving session if unmodified
+    saveUninitialized: false, // Avoid creating session until something is stored
+    cookie: { maxAge: 60000 }, // Optional: Set cookie expiration (in milliseconds)
+  })
+);
 
 connectDB();
 
-//page endpoints
-// app.get("/", function (req, res) {
-//   res.render("../pages/index");
-// });
-
-app.get("/index", function (req, res) {
-  res.render("../pages/index");
-});
-
-app.get("/signup", (req, res) => {
-  res.render("../pages/signup", { allergies: allergies });
-});
-
-app.get("/home", function (req, res) {
-  res.render("../pages/home");
-});
-
 app.get("/passwordreset", function (req, res) {
   res.render("../pages/passwordreset");
-});
-
-app.get("/test", (req, res) => {
-  res.json({ message: "Hello from the Express backend!" });
 });
 
 app.get("/admin", authenticate, async function (req, res) {
@@ -112,9 +62,25 @@ app.get("/admin", authenticate, async function (req, res) {
   });
 });
 
-app.get("/get-users", async (req, res) => {
-  const userData = await UserModel.find();
-  res.json(userData);
+app.get("/check-auth", authenticate, (req, res) => {
+  try {
+    res.status(200).json({ message: "Authenticated" });
+  } catch (error) {
+    console.error("Error in check-auth:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+app.get("/fetch-user", async (req, res) => {
+  try {
+    if (req.session.user) {
+      res.send(`Session Data: ${JSON.stringify(req.session.user)}`);
+    } else {
+      res.send("No session data found");
+    }
+  } catch (e) {
+    console.error(e);
+  }
 });
 
 //user-login endpoint
@@ -146,23 +112,44 @@ app.post("/login", async (req, res) => {
       { expiresIn: "1h" }
     );
     console.log("User logged in successfully, token: " + token);
-    //authenticate.isLogin = true;
 
-    //fetch user data
-    if (user.role == "admin") {
-      res
-        .status(200)
-        .cookie("token", token, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === "production",
-          maxAge: 3600000, // 1 hour
-        })
-        .json({ message: "Successfully logged in with token: " + token });
-    } else if (user.role == "doctor") {
-      res.status(200).render("doctor");
-    } else {
-      res.status(200).render("home", { user: user });
+    req.session.user = {
+      username: user.username,
+      password: password,
+      email: user.email,
+      role: user.role,
+      name: user.name,
+    };
+    if (user.role == "patient") {
+      const patient = await PatientModel.findOne({
+        $or: [{ username: username }, { email: username }],
+      });
+      req.session.user = {
+        age: patient.age,
+        allergy: patient.allergy,
+        appointments: patient.appointments,
+        profile: patient.profile,
+      };
     }
+    if (user.role == "doctor") {
+      const doctor = await DoctorModel.findOne({
+        $or: [{ username: username }, { email: username }],
+      });
+      req.session.user = {
+        approval: doctor.approval,
+        details: doctor.details,
+        appointments: doctor.appointments,
+        profile: doctor.profile,
+      };
+    }
+    res
+      .status(200)
+      .cookie("token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 3600000, // 1 hour
+      })
+      .json({ message: "Successfully logged in with token: " + token });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal server error" });
@@ -218,30 +205,11 @@ app.post("/register", async (req, res) => {
     }
   }
 });
-app.post("/test", async function (req, res) {
-  const { username, email, name, role, specialization, experience } = req.body;
-  try {
-    const doctor = new DoctorModel({
-      username,
-      specialization,
-      experience,
-      name,
-      email,
-      role,
-      approval: "pending",
-    });
-    await doctor.save();
-    res.status(200).json("big success");
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
-});
 
 //user-logout endpoint
 app.post("/logout", (req, res) => {
-  req.session = null;
-  isLogin = false;
-  res.status(200).clearCookie("token").redirect("/index");
+  req.session.destroy();
+  res.status(200).clearCookie("token").json("Logged out successfully");
   console.log("User logged out successfully");
 });
 

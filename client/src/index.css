@@ -41,6 +41,7 @@ nav ul li a:hover {
   margin: 20px auto;
   text-align: center;
   position: relative;
+  z-index: -1;
 }
 
 .gallery-container {
@@ -72,10 +73,6 @@ nav ul li a:hover {
   cursor: pointer;
   font-size: 16px;
   transition: background-color 0.3s ease;
-}
-
-.gallery-controls button:hover {
-  background-color: #0056b3;
 }
 
 .panel {
@@ -183,4 +180,12 @@ nav ul li a:hover {
   margin: 15px 0;
   font-size: 1rem;
   color: #333;
+}
+.modal-content {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  display: flex;
+  text-align: left;
+  justify-content: space-between;
 }

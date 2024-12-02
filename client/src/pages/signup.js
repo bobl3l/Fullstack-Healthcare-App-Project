@@ -1,43 +1,84 @@
 import React, { useState, useEffect } from "react";
-import "./style.css"; 
+import "./style.css";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const Signup = () => {
+  const allergylist = [
+    "Antibiotics",
+    "NSAIDs",
+    "Sulfa drugs",
+    "Antiseizure medications",
+    "pain medications",
+    "ACE inhibitors",
+    "contrast dyes",
+    "chemotherapy drugs",
+    "HIV drugs",
+    "Insulin",
+    "Herval medicines",
+    "Moluscs",
+    "Eggs",
+    "Fish",
+    "Lupin",
+    "Soya",
+    "Milk",
+    "Peanuts",
+    "Gluten",
+    "Crustaceans",
+    "Mustard",
+    "Nuts",
+    "Sesame",
+    "Celery",
+    "Sulphintes",
+  ];
   const [formData, setFormData] = useState({
     username: "",
     email: "",
     name: "",
     role: "patient",
     age: "",
-    allergies: [],
+    allergy: [],
     specialization: "",
     experience: "",
     password: "",
     reenterPassword: "",
   });
 
-  const [allergies, setAllergies] = useState([]);
   const [expanded, setExpanded] = useState(false);
   const [emailError, setEmailError] = useState("");
   const [emailValid, setEmailValid] = useState("");
   const [passwordError, setPasswordError] = useState([]);
   const [passwordValid, setPasswordValid] = useState("");
+  const [Allergies, setAllergies] = useState([]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
-
-  const handleAllergyChange = (e) => {
-    const { value, checked } = e.target;
-    if (checked) {
-      setFormData({ ...formData, allergies: [...formData.allergies, value] });
-    } else {
-      setFormData({
-        ...formData,
-        allergies: formData.allergies.filter((allergy) => allergy !== value),
-      });
-    }
+  const navigate = useNavigate();
+  const handleCheckboxChange = (option) => {
+    setAllergies(
+      (prevAllergies) =>
+        prevAllergies.includes(option)
+          ? prevAllergies.filter((value) => value !== option) // Remove if already selected
+          : [...prevAllergies, option] // Add if not selected
+    );
   };
+  function handleSubmit(event) {
+    event.preventDefault();
+    formData.allergy = Allergies;
+    console.log(formData);
+    axios
+      .post("http://localhost:5000/register", formData)
+      .then(function (response) {
+        if (response.status === 200) {
+          navigate("/login");
+        } else {
+          console.log("Signup failed.");
+        }
+      })
+      .catch((err) => console.log(err));
+  }
 
   const roleSelect = (e) => {
     setFormData({ ...formData, role: e.target.value });
@@ -85,12 +126,6 @@ const Signup = () => {
     } else {
       setPasswordValid("");
     }
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Handle form submission
-    console.log(formData);
   };
 
   return (
@@ -173,33 +208,31 @@ const Signup = () => {
               />
             </label>
             <br />
-            <br />
             <label>
-              Allergies:
-              <br />
-              <div className="multiselect">
-                <div className="selectBox" onClick={showCheckboxes}>
-                  <select>
-                    <option id="multiSelectDropdown">
-                      {formData.allergies.length > 0
-                        ? formData.allergies.join(", ")
-                        : "Select your allergies"}
-                    </option>
-                  </select>
-                  <div className="overSelect"></div>
+              <div className="max-w-md mx-auto mt-10 p-4 bg-gray-50 rounded shadow-md">
+                <button
+                  onClick={showCheckboxes}
+                  className="w-full px-4 py-2 text-white bg-gray-400 rounded hover:bg-gray-500 focus:outline-none focus:ring focus:ring-gray-100 text-start"
+                >
+                  <strong>Allergies:</strong>{" "}
+                </button>
+                <div className="mt-4 p-4 bg-gray-100 rounded text-sm">
+                  <span className="text-gray-700">
+                    {Allergies.join(", ") || "None"}
+                  </span>
                 </div>
                 {expanded && (
-                  <div id="checkboxes">
-                    {allergies.map((allergy, index) => (
-                      <label key={index} htmlFor={`allergy${index}`}>
+                  <div className="mt-4 p-4 border rounded bg-white">
+                    {allergylist.map((option) => (
+                      <label key={option} className="block mb-2">
                         <input
                           type="checkbox"
-                          id={`allergy${index}`}
-                          value={allergy}
-                          checked={formData.allergies.includes(allergy)}
-                          onChange={handleAllergyChange}
+                          value={formData.allergies}
+                          checked={Allergies.includes(option)}
+                          onChange={() => handleCheckboxChange(option)}
+                          className="mr-2 rounded focus:ring-blue-500"
                         />
-                        {allergy}
+                        {option}
                       </label>
                     ))}
                   </div>
