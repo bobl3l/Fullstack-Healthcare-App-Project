@@ -49,31 +49,69 @@ const DoctorCard = ({ name, image, details }) => {
       {/* Booking Modal */}
       {isBookingModalOpen && (
         <div className="modal">
-          <div className="modal-content">
-            <h1>Book an Appointment with {name}</h1>
-            <form>
-              <div>
-                <label>Date:</label>
-                <input type="date" required />
+          <div className="modal-content-small">
+            <h1 style={{ fontWeight: "bold" }}>
+              Book an Appointment with {name}
+            </h1>
+            <form className="">
+              <div className="text-left m-8 space-y-5">
+                <div className="flex flex-row space-x-4">
+                  <div className="text-left my-8 space-y-7 flex flex-col">
+                    <label style={{ fontWeight: "bold", alignSelf: "center" }}>
+                      Date:
+                    </label>
+                    <label style={{ fontWeight: "bold", alignSelf: "center" }}>
+                      Time:
+                    </label>
+                    <label style={{ fontWeight: "bold", alignSelf: "center" }}>
+                      Remarks:
+                    </label>
+                  </div>
+                  <div className="text-left m-8 space-y-5">
+                    <input
+                      type="date"
+                      required
+                      style={{
+                        marginLeft: "10px",
+                        backgroundColor: "rgba(128,128,128,0.1",
+                        borderRadius: "5px",
+                        padding: "2px",
+                      }}
+                    />{" "}
+                    <input
+                      type="time"
+                      required
+                      style={{
+                        marginLeft: "10px",
+                        backgroundColor: "rgba(128,128,128,0.1",
+                        borderRadius: "5px",
+                        padding: "2px",
+                      }}
+                    />
+                    <textarea
+                      placeholder="Optional message"
+                      style={{
+                        marginLeft: "10px",
+                        backgroundColor: "rgba(128,128,128,0.1",
+                        borderRadius: "5px",
+                        padding: "4px",
+                      }}
+                    ></textarea>
+                  </div>
+                </div>
               </div>
-              <div>
-                <label>Time:</label>
-                <input type="time" required />
+              <div className="flex-row justify-end">
+                <button
+                  onClick={() => setBookingModalOpen(false)}
+                  type="button"
+                  className="btn btn-close"
+                >
+                  Close
+                </button>{" "}
+                <button type="submit" className="btn btn-primary">
+                  Submit
+                </button>
               </div>
-              <div>
-                <label>Remarks:</label>
-                <textarea placeholder="Optional message"></textarea>
-              </div>
-              <button
-                onClick={() => setBookingModalOpen(false)}
-                type="button"
-                className="btn btn-close"
-              >
-                Close
-              </button>{" "}
-              <button type="submit" className="btn btn-primary">
-                Submit
-              </button>
             </form>
           </div>
         </div>

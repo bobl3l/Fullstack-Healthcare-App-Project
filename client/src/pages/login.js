@@ -19,9 +19,10 @@ const Login = () => {
     event.preventDefault();
     console.log(post);
     await axios
-      .post("http://localhost:5000/login", post)
+      .post("http://localhost:5000/login", post, { withCredentials: true })
       .then(function (response) {
         if (response.status === 200) {
+          console.log(response);
           setIsLoggedIn(true);
         } else {
           console.log("Login failed.");

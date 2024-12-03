@@ -27,7 +27,12 @@ if (process.env.NODE_ENV === "production") {
     res.sendFile(path.join(__dirname, "client/build", "index.html"));
   });
 }
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    credentials: true,
+  })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
@@ -62,12 +67,19 @@ app.get("/admin", authenticate, async function (req, res) {
   });
 });
 
-app.get("/check-auth", authenticate, (req, res) => {
+app.get("/check-auth", (req, res) => {
+  const token = req.cookies.token;
+  if (!token) {
+    console.log("no token");
+    return res.status(401).send("Not authenticated");
+  }
+
   try {
-    res.status(200).json({ message: "Authenticated" });
+    const verified = jwt.verify(token, process.env.JWT_SECRET);
+    res.status(200).json({ userId: verified.id });
   } catch (error) {
-    console.error("Error in check-auth:", error);
-    res.status(500).json({ message: "Internal server error" });
+    console.log("wrong token");
+    res.status(401).send("Invalid token");
   }
 });
 
@@ -143,12 +155,13 @@ app.post("/login", async (req, res) => {
       };
     }
     res
-      .status(200)
+
       .cookie("token", token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        maxAge: 3600000, // 1 hour
+        secure: false,
+        maxAge: 600000, // 1 hour
       })
+      .status(200)
       .json({ message: "Successfully logged in with token: " + token });
   } catch (error) {
     console.error(error);

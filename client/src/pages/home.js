@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import Gallery from "../components/gallery";
-import ScrollAnimation from "../components/scrollinDiv";
 import Cardiology from "../assets/Cardiology.png";
 import Dentistry from "../assets/Dentistry.png";
 import Dermatology from "../assets/Dermatology.png";

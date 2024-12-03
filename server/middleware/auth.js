@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 dotenv.config();
 const authenticate = (req, res, next) => {
   const token = req.cookies.token;
+  console.log(token);
   if (!token) {
     return res.status(401).json({ message: "No token, authorization denied" });
   }
