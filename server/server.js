@@ -11,6 +11,9 @@ import { fileURLToPath } from "url";
 import authenticate from "./middleware/auth.js";
 import cookieParser from "cookie-parser";
 import adminRouter from "./routes/adminapi.js";
+import patientRouter from "./routes/patientapi.js";
+import doctorRouter from "./routes/doctorapi.js";
+
 import router from "./pwreset.js";
 import cors from "cors";
 import session from "express-session";
@@ -36,8 +39,9 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-
 app.use("/admin", adminRouter);
+app.use("/doctor", doctorRouter);
+app.use("/patient", patientRouter);
 app.use("/pw", router);
 app.use(
   session({
@@ -88,10 +92,20 @@ app.get("/fetch-user", async (req, res) => {
     if (req.session.user) {
       res.send(`Session Data: ${JSON.stringify(req.session.user)}`);
     } else {
-      res.send("No session data found");
+      res.status(400).send("No session data found");
     }
   } catch (e) {
     console.error(e);
+  }
+});
+
+app.get("/fetch-doctors", async (req, res) => {
+  try {
+    const approvedDoctors = await DoctorModel.find({ approval: "approved" });
+    res.json(approvedDoctors);
+  } catch (e) {
+    console.error(e);
+    res.status(500).send(e);
   }
 });
 
@@ -137,6 +151,11 @@ app.post("/login", async (req, res) => {
         $or: [{ username: username }, { email: username }],
       });
       req.session.user = {
+        username: user.username,
+        password: password,
+        email: user.email,
+        role: user.role,
+        name: user.name,
         age: patient.age,
         allergy: patient.allergy,
         appointments: patient.appointments,
@@ -148,6 +167,11 @@ app.post("/login", async (req, res) => {
         $or: [{ username: username }, { email: username }],
       });
       req.session.user = {
+        username: user.username,
+        password: password,
+        email: user.email,
+        role: user.role,
+        name: user.name,
         approval: doctor.approval,
         details: doctor.details,
         appointments: doctor.appointments,
@@ -212,7 +236,6 @@ app.post("/register", async (req, res) => {
 
       await user.save();
       console.log("User registered successfully");
-      res.status(200).redirect("/index");
     } catch (error) {
       res.status(400).json({ message: error.message });
     }
@@ -220,7 +243,7 @@ app.post("/register", async (req, res) => {
 });
 
 //user-logout endpoint
-app.post("/logout", (req, res) => {
+app.post("/logout", async (req, res) => {
   req.session.destroy();
   res.status(200).clearCookie("token").json("Logged out successfully");
   console.log("User logged out successfully");
@@ -229,4 +252,32 @@ app.post("/logout", (req, res) => {
 app.listen(PORT, (error) => {
   if (!error) console.log(`Server is listening on port ${PORT}`);
   else console.log("Error occurred, server can't start", error);
+});
+
+app.post("/test", async (req, res) => {
+  const {
+    username,
+    email,
+    name,
+    specialization,
+    experience,
+    details,
+    profile,
+  } = req.body;
+  const doctor = new DoctorModel({
+    username,
+    specialization,
+    experience,
+    name,
+    email,
+    details,
+    profile,
+    approval: "approved",
+  });
+  try {
+    await doctor.save();
+    res.status(200).json("registered");
+  } catch (err) {
+    res.status(500).send({ err });
+  }
 });

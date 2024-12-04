@@ -27,11 +27,25 @@ export default function NavBar() {
   ];
   const [isLoggedIn, setIsLoggedIn] = useContext(AuthContext);
   const [isPromptOpen, setPromptOpen] = useState(false);
+  const [currentuser, setCurrentUser] = useState();
 
   const location = useLocation();
   const navigate = useNavigate();
-  function logOut() {
-    axios
+  useEffect(() => {
+    const fetch = async () => {
+      try {
+        await axios.get("http://localhost:5000/fetch-user").then((res) => {
+          setCurrentUser(res.data);
+          console.log(res.data);
+        });
+      } catch (e) {
+        console.error(e);
+      }
+    };
+    fetch();
+  }, []);
+  async function logOut() {
+    await axios
       .post("http://localhost:5000/logout")
       .then(function (response) {
         if (response.status === 200) {
@@ -68,23 +82,61 @@ export default function NavBar() {
             <Logo />
             <div className="sm:ml-6 sm:block">
               <div className="flex space-x-4">
-                {navigation.map((item) => (
+                {!currentuser ? (
+                  navigation.map((item) => (
+                    <a
+                      key={item.name}
+                      href={item.href}
+                      aria-current={
+                        location.pathname === item.href ? "page" : undefined
+                      }
+                      className={classNames(
+                        location.pathname === item.href
+                          ? "bg-gray-900 text-white"
+                          : "text-gray-700 hover:bg-gray-700 hover:text-white",
+                        "rounded-md px-3 py-2 text-sm font-medium"
+                      )}
+                    >
+                      {item.name}
+                    </a>
+                  ))
+                ) : currentuser.role === "patient" ? (
+                  navigation.map((item) => (
+                    <a
+                      key={item.name}
+                      href={item.href}
+                      aria-current={
+                        location.pathname === item.href ? "page" : undefined
+                      }
+                      className={classNames(
+                        location.pathname === item.href
+                          ? "bg-gray-900 text-white"
+                          : "text-gray-700 hover:bg-gray-700 hover:text-white",
+                        "rounded-md px-3 py-2 text-sm font-medium"
+                      )}
+                    >
+                      {item.name}
+                    </a>
+                  ))
+                ) : currentuser.role === "admin" ? (
                   <a
-                    key={item.name}
-                    href={item.href}
-                    aria-current={
-                      location.pathname === item.href ? "page" : undefined
-                    }
-                    className={classNames(
-                      location.pathname === item.href
-                        ? "bg-gray-900 text-white"
-                        : "text-gray-700 hover:bg-gray-700 hover:text-white",
-                      "rounded-md px-3 py-2 text-sm font-medium"
-                    )}
+                    key="Dashboard"
+                    href="/admindashboard"
+                    aria-current={"page"}
+                    className="bg-gray-900 text-white rounded-md px-3 py-2 text-sm font-medium"
                   >
-                    {item.name}
+                    Dashboard
                   </a>
-                ))}
+                ) : (
+                  <a
+                    key="Dashboard"
+                    href="/doctordashboard"
+                    aria-current={"page"}
+                    className="bg-gray-900 text-white rounded-md px-3 py-2 text-sm font-medium"
+                  >
+                    Dashboard
+                  </a>
+                )}
               </div>
             </div>
           </div>

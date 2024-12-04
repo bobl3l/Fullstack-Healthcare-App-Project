@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import Gallery from "../components/gallery";
 import Cardiology from "../assets/Cardiology.png";
 import Dentistry from "../assets/Dentistry.png";
 import Dermatology from "../assets/Dermatology.png";
@@ -17,6 +16,9 @@ import Pulmonology from "../assets/Pulmonology.png";
 import Rhinology from "../assets/Rhinology.png";
 import Urology from "../assets/Urology.png";
 import Footer from "../components/footer";
+import LandingPage from "../assets/landingpage.png";
+import AppointmentModal from "../components/appointmentbooking";
+import axios from "axios";
 
 const Home = () => {
   const items = [
@@ -37,6 +39,21 @@ const Home = () => {
     { id: 15, img: Rhinology, text: "Rhinology" },
     { id: 16, img: Urology, text: "Urology" },
   ];
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [doctorlist, setDoctorlist] = useState([]);
+  useEffect(() => {
+    const fetch = async () => {
+      try {
+        await axios.get("http://localhost:5000/fetch-doctors").then((res) => {
+          setDoctorlist(res.data);
+          console.log(res.data);
+        });
+      } catch (e) {
+        console.error(e);
+      }
+    };
+    fetch();
+  }, []);
 
   const doctors = [
     {
@@ -64,12 +81,29 @@ const Home = () => {
       title: "Cardiologist",
     },
   ];
+  const handleModalSubmit = (appointmentData) => {
+    console.log("Appointment Data:", appointmentData);
+  };
 
   return (
     <>
       <div>
-        <Gallery />
+        <div className="flex justify-center items-center  rounded-3xl">
+          <img src={LandingPage} />
+          <button
+            onMouseDown={() => setIsModalOpen(true)}
+            className="absolute left-24 top-1/2 bg-cyan-100 text-cyan-600 p-5 font-bold text-center text-3xl rounded-xl px-10 my-10 hover:bg-cyan-700 hover:text-white duration-300"
+          >
+            Book an appointment
+          </button>
+        </div>
       </div>
+      <AppointmentModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        doctors={doctorlist}
+        onSubmit={handleModalSubmit}
+      />
       <div className="panel">
         <div className="flex ">
           <img

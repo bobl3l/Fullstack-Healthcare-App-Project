@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "./DoctorCard.css";
 
-const DoctorCard = ({ name, image, details }) => {
+const DoctorCard = ({ name, image, details, specialization, experience }) => {
   const [isDetailsModalOpen, setDetailsModalOpen] = useState(false);
   const [isBookingModalOpen, setBookingModalOpen] = useState(false);
 
@@ -9,7 +9,7 @@ const DoctorCard = ({ name, image, details }) => {
     <div className="info-card">
       <img src={image} alt={`${name}`} className="info-card-image" />
       <h2 className="info-card-name">{name}</h2>
-      <p>specialization</p>
+      <p>{specialization}</p>
       <div className="info-card-buttons">
         <button
           onClick={() => setDetailsModalOpen(true)}
@@ -33,6 +33,10 @@ const DoctorCard = ({ name, image, details }) => {
               <img src={image} alt={`${name}`} />
               <div className="mx-6">
                 <h1>{name}</h1>
+                <h2>
+                  <strong>Years of Experience: </strong>
+                  {experience}
+                </h2>
                 <p>{details}</p>
               </div>
             </div>

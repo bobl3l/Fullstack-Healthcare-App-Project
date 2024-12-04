@@ -1,161 +1,84 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+
 const Profile = () => {
-  const [profile, setProfile] = useState(null);
+  const [userData, setUserData] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editableData, setEditableData] = useState({});
+
   useEffect(() => {
-    // Fetch user data on component mount
-    const fetchData = async () => {
+    // Fetch user data from the API
+    const fetchUserData = async () => {
       try {
         const response = await axios.get("http://localhost:5000/fetch-user"); // Replace with your API endpoint
-        setProfile(response.data); // Store the response data
-      } catch (err) {
-        console.log(err.message); // Store error message
+        setUserData(response.data);
+        setEditableData(response.data); // Initialize editable data
+      } catch (error) {
+        console.error("Error fetching user data:", error);
       }
     };
 
-    fetchData();
+    fetchUserData();
   }, []);
-
-  const [isEditing, setIsEditing] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setProfile((prevProfile) => ({
-      ...prevProfile,
-      [name]: value,
-    }));
+    setEditableData({ ...editableData, [name]: value });
   };
 
-  const toggleEditing = () => {
-    setIsEditing(!isEditing);
+  const saveChanges = async () => {
+
+    try {
+      await axios.put("http://localhost:5000/api/user", editableData); // Replace with your API endpoint
+      setUserData(editableData); // Update displayed data
+      setIsEditing(false); // Exit edit mode
+    } catch (error) {
+      console.error("Error saving user data:", error);
+    }
   };
 
-  const handleSave = () => {
-    // Here you can add logic to send updated profile data to the backend
-    console.log("Updated Profile:", profile);
-    setIsEditing(false);
-  };
+  if (!userData) return <p>Loading user data...</p>;
 
   return (
     <div style={styles.container}>
-      <h1>Your Profile</h1>
-      <div style={styles.profileCard}>
-        {/* Profile Picture */}
-        {/* <div style={styles.pictureContainer}>
-          <img
-            src={profile.profilePicture}
-            alt="Profile"
-            style={styles.profilePicture}
-          />
-          {isEditing && (
-            <input
-              type="url"
-              name="profilePicture"
-              value={profile.profilePicture}
-              onChange={handleInputChange}
-              placeholder="Profile Picture URL"
-              style={styles.input}
-            />
-          )}
-        </div> */}
-        {Object.keys(profile).map((key) => (
-          <div style={styles.field}>
-            <label>
-              <strong>{key}:</strong>
-            </label>
-            {isEditing ? (
-              <input
-                type="text"
-                name={key}
-                value={profile[key]}
-                onChange={handleInputChange}
-                style={styles.input}
-              />
-            ) : (
-              <span>{profile[key]}</span>
-            )}
-          </div>
-        ))}
-        {/* Username */}
-        <div style={styles.field}>
-          <label>Username:</label>
+      <h1>User Profile</h1>
+      {Object.keys(userData).map((key) => (
+        <div style={styles.field} key={key}>
+          <strong style={styles.title}>{key}:</strong>
           {isEditing ? (
             <input
               type="text"
-              name="username"
-              value={profile.username}
+              name={key}
+              value={editableData[key]}
               onChange={handleInputChange}
               style={styles.input}
             />
           ) : (
-            <span>{profile.username}</span>
+            <span style={styles.value}>{userData[key]}</span>
           )}
         </div>
-
-        {/* Password
-        <div style={styles.field}>
-          <label>Password:</label>
-          {isEditing ? (
-            <input
-              type="password"
-              name="password"
-              value={profile.password}
-              onChange={handleInputChange}
-              style={styles.input}
-            />
-          ) : (
-            <span>{"*".repeat(profile.password.length)}</span>
-          )}
-        </div>
-
-        {/* Email 
-        <div style={styles.field}>
-          <label>Email:</label>
-          {isEditing ? (
-            <input
-              type="email"
-              name="email"
-              value={profile.email}
-              onChange={handleInputChange}
-              style={styles.input}
-            />
-          ) : (
-            <span>{profile.email}</span>
-          )}
-        </div>
-
-        {/* Details *
-        <div style={styles.field}>
-          <label>Details:</label>
-          {isEditing ? (
-            <textarea
-              name="details"
-              value={profile.details}
-              onChange={handleInputChange}
-              style={styles.textarea}
-            />
-          ) : (
-            <p>{profile.details}</p>
-          )}
-        </div> */}
-
-        {/* Action Buttons */}
-        <div style={styles.buttonContainer}>
-          {isEditing ? (
-            <>
-              <button onClick={handleSave} style={styles.button}>
-                Save
-              </button>
-              <button onClick={toggleEditing} style={styles.buttonCancel}>
-                Cancel
-              </button>
-            </>
-          ) : (
-            <button onClick={toggleEditing} style={styles.button}>
-              Edit Profile
+      ))}
+      <div style={styles.buttons}>
+        {isEditing ? (
+          <>
+            <button onClick={saveChanges} style={styles.saveButton}>
+              Save
             </button>
-          )}
-        </div>
+            <button
+              onClick={() => {
+                setEditableData(userData);
+                setIsEditing(false);
+              }}
+              style={styles.cancelButton}
+            >
+              Cancel
+            </button>
+          </>
+        ) : (
+          <button onClick={() => setIsEditing(true)} style={styles.editButton}>
+            Edit
+          </button>
+        )}
       </div>
     </div>
   );
@@ -163,66 +86,57 @@ const Profile = () => {
 
 const styles = {
   container: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    fontFamily: "Arial, sans-serif",
+    maxWidth: "600px",
+    margin: "0 auto",
     padding: "20px",
-  },
-  profileCard: {
-    width: "400px",
-    border: "1px solid #ddd",
+    border: "1px solid #ccc",
     borderRadius: "10px",
-    padding: "20px",
     backgroundColor: "#f9f9f9",
-    boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-  },
-  pictureContainer: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    marginBottom: "20px",
-  },
-  profilePicture: {
-    width: "150px",
-    height: "150px",
-    borderRadius: "50%",
-    marginBottom: "10px",
   },
   field: {
-    marginBottom: "15px",
-  },
-  input: {
-    width: "100%",
-    padding: "8px",
-    borderRadius: "5px",
-    border: "1px solid #ccc",
-  },
-  textarea: {
-    width: "100%",
-    height: "60px",
-    padding: "8px",
-    borderRadius: "5px",
-    border: "1px solid #ccc",
-  },
-  buttonContainer: {
     display: "flex",
     justifyContent: "space-between",
-    marginTop: "20px",
+    alignItems: "center",
+    marginBottom: "15px",
   },
-  button: {
-    padding: "10px 15px",
-    backgroundColor: "#007bff",
-    color: "white",
+  title: {
+    fontWeight: "bold",
+  },
+  value: {
+    marginLeft: "10px",
+  },
+  input: {
+    padding: "5px",
+    fontSize: "16px",
+    border: "1px solid #ccc",
+    borderRadius: "5px",
+  },
+  buttons: {
+    marginTop: "20px",
+    textAlign: "right",
+  },
+  editButton: {
+    backgroundColor: "#4caf50",
+    color: "#fff",
     border: "none",
+    padding: "10px 20px",
     borderRadius: "5px",
     cursor: "pointer",
   },
-  buttonCancel: {
-    padding: "10px 15px",
-    backgroundColor: "#dc3545",
-    color: "white",
+  saveButton: {
+    backgroundColor: "#4caf50",
+    color: "#fff",
     border: "none",
+    padding: "10px 20px",
+    borderRadius: "5px",
+    cursor: "pointer",
+    marginRight: "10px",
+  },
+  cancelButton: {
+    backgroundColor: "#f44336",
+    color: "#fff",
+    border: "none",
+    padding: "10px 20px",
     borderRadius: "5px",
     cursor: "pointer",
   },

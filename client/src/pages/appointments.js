@@ -35,7 +35,7 @@ const Appointments = () => {
     <div className="appointment-list">
       <h1>Your Appointments</h1>
 
-      {isLoggedIn ? (
+      {!isLoggedIn ? (
         <p className="text-center">
           You need to sign in to view your appointments.
         </p>

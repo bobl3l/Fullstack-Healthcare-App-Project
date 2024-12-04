@@ -2,183 +2,43 @@
 <html>
   <head>
     <title>Healthcare Project</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Edu+AU+VIC+WA+NT+Pre:wght@400..700&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Sour+Gummy:ital,wght@0,300;1,300&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="style.css" />
+
   </head>
   <body>
     <div class="dashboard">
-      <div
-        style="
-          display: flex;
-          justify-content: space-between;
-          width: 100%;
-          align-items: center;
-        "
-      >
-        <h1>Dashboard</h1>
-        <button
-          class="admin-button"
-          id="logout-button"
-          onclick="openPop('logout')"
-        >
-          Log out
-        </button>
-      </div>
+      <form action="/test" method="post">
+<label for="username">Username:</label>
+    <input type="text" id="username" name="username" required placeholder="Enter your username">
 
-      <p>Hello, Admin!</p>
-      <!-- <button id="manage-users" value="user-database">Manage users</button>
-      <button id="manage-applications" value="application-database">Manage applications</button> -->
-      <!-- <br /> -->
-      <div id="user-database" class="hidden" style="display: block;">
-        <h2>User Database</h2>
-        <table class="admin-table">
-          <tr>
-            <th>Userame</th>
-            <th>Name</th>
-            <th>Role</th>
-            <th>Actions</th>
-          </tr>
-          <% users.forEach(user => { %>
-          <tr>
-            <td><%= user.username %></td>
-            <td><%= user.name %></td>
-            <td><%= user.role %></td>
-            <td>
-              <button
-                class="admin-button"
-                id="edit-button"
-                onclick=" openPop('edit')"
-                style="background-color: darkgreen"
-              >
-                Edit
-              </button>
-              <button
-                class="admin-button"
-                id="delete-button"
-                onclick="openPop('delete')"
-              >
-                Delete
-              </button>
-            </td>
-          </tr>
-          <% }); %>
-        </table>
-      </div>
-      <div id="application-database" class="hidden"></div>
-        <h2>Pending Applications</h2>
-        <table class="admin-table">
-          <tr>
-            <th>Userame</th>
-            <th>Name</th>
-            <th>Email</th>
-            <th>specialization</th>
-            <th>Experience</th>
-            <th>Actions</th>
-          </tr>
-          <% applications.forEach(application => { %>
-          <tr>
-            <td><%= application.username %></td>
-            <td><%= application.name %></td>
-            <td><%= application.email %></td>
-            <td><%= application.specialization %></td>
-            <td><%= application.experience %></td>
-            
-            <td>
-              
-              <button
-              type="submit" formmethod="post" formaction='/approve?id=<%= application.username %>'
-                class="admin-button"
-                id="edit-button"
-                style="background-color: darkgreen"
-              >
-                Approve
-              </button>
-              <button
-              type="submit" formmethod="post" formaction="/reject?id=<%= application.username %>"
-                class="admin-button"
-                id="delete-button"
-            
-              >
-                Reject
-              </button>
-            </td>
-          </tr>
-          <% }); %>
-        </table>
-      </div>
+    <!-- Email -->
+    <label for="email">Email:</label>
+    <input type="email" id="email" name="email" required placeholder="Enter your email">
 
-      <div id="logout" class="popupDialog">
-        <p>Are you sure you want to logout?</p>
-        <div style="display: flex; justify-content: space-between; width: 100%">
-          <button
-            class="logout"
-            style="background-color: lightgrey"
-            onclick="openPop('logout')"
-          >
-            Cancel
-          </button>
-          <form action="/logout" method="post">
-            <button class="logout">Logout</button>
-          </form>
-        </div>
-      </div>
-      <div id="edit" class="popupDialog">
-        <p>Are you sure you want to logout?</p>
-        <div style="display: flex; justify-content: space-between; width: 100%">
-          <button
-            class="logout"
-            style="background-color: lightgrey"
-            onclick="openPop('edit')"
-          >
-            Cancel
-          </button>
-          <form action="/logout" method="post">
-            <button class="logout">Logout</button>
-          </form>
-        </div>
-      </div>
-      <div id="delete" class="popupDialog">
-        <p>Are you sure you want to delete this user?</p>
-        <div style="display: flex; justify-content: space-between; width: 100%">
-          <button
-            class="logout"
-            style="background-color: lightgrey"
-            onclick="openPop('delete')"
-          >
-            Cancel
-          </button>
-          <form action="/delete-user" method="delete">
-            <button class="logout">Delete</button>
-          </form>
-        </div>
-      </div>
+    <!-- Name -->
+    <label for="name">Name:</label>
+    <input type="text" id="name" name="name" required placeholder="Enter your full name">
+
+    <!-- Specialization -->
+    <label for="specialization">Specialization:</label>
+       <input type="text" id="specialization" name="specialization" required placeholder="specialization">
+    </select>
+
+    <!-- Experience -->
+    <label for="experience">Experience (in years):</label>
+    <input type="number" id="experience" name="experience" required min="0" placeholder="Enter your experience">
+
+    <!-- Details -->
+    <label for="details">Details:</label>
+    <textarea id="details" name="details" rows="5" required placeholder="Provide additional details about yourself"></textarea>
+
+
+    <!-- Profile Link -->
+    <label for="profileLink">Profile Link:</label>
+    <input type="url" id="profileLink" name="profileLink" required placeholder="Enter your profile link (e.g., LinkedIn)">
+
+    <!-- Submit Button -->
+    <button type="submit">Submit</button>
+      </form>
     </div>
-
-    <script>
-      var logout = getComputedStyle("logout");
-      function openPop(form) {
-        const popDialog = document.getElementById(form);
-        popDialog.style.visibility =
-          popDialog.style.visibility === "visible" ? "hidden" : "visible";
-      }
-
-      function formSelect(x) {
-        var selectedForm = x.value;
-
-        if (selectedForm == "user-database") {
-          document.getElementById("user-database").style.display = "block";
-          document.getElementById("application-database").style.display = "none";
-        } else if (selectedForm == "application-database") {
-          document.getElementById("patient").style.display = "none";
-          document.getElementById("application-database").style.display = "block";
-        }
-      }
-        
-    </script>
   </body>
 </html>

@@ -6,6 +6,7 @@ export const AuthContext = createContext();
 // Create a Provider Component
 export const AuthProvider = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false); // Manage login status
+  const [user, setUser] = useState();
   useEffect(() => {
     const load = async () => {
       try {
