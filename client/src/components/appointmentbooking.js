@@ -38,19 +38,10 @@ const AppointmentModal = ({ isOpen, onClose, onSubmit, doctors }) => {
 
           <label htmlFor="date">Select Date:</label>
           <input
-            type="date"
+            type="datetime-local"
             id="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            required
-          />
-
-          <label htmlFor="time">Select Time:</label>
-          <input
-            type="time"
-            id="time"
-            value={time}
-            onChange={(e) => setTime(e.target.value)}
             required
           />
 

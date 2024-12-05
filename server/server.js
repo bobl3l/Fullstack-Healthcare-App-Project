@@ -48,7 +48,11 @@ app.use(
     secret: "your_jwt_secret", // Replace with a secure key
     resave: false, // Avoid saving session if unmodified
     saveUninitialized: false, // Avoid creating session until something is stored
-    cookie: { maxAge: 60000 }, // Optional: Set cookie expiration (in milliseconds)
+    cookie: {
+      secure: false, // Set to `true` if using HTTPS
+      httpOnly: true,
+      maxAge: 3600000,
+    }, // Optional: Set cookie expiration (in milliseconds)
   })
 );
 
@@ -56,19 +60,6 @@ connectDB();
 
 app.get("/passwordreset", function (req, res) {
   res.render("../pages/passwordreset");
-});
-
-app.get("/admin", authenticate, async function (req, res) {
-  const users = await UserModel.find();
-  const approvedDoctors = await DoctorModel.find({ approval: "approved" });
-  const applications = await DoctorModel.find({ approval: "pending" });
-  const patients = await PatientModel.find();
-  res.render("../pages/admin", {
-    users: users,
-    doctors: approvedDoctors,
-    patients: patients,
-    applications: applications,
-  });
 });
 
 app.get("/check-auth", (req, res) => {
@@ -90,7 +81,7 @@ app.get("/check-auth", (req, res) => {
 app.get("/fetch-user", async (req, res) => {
   try {
     if (req.session.user) {
-      res.send(`Session Data: ${JSON.stringify(req.session.user)}`);
+      res.send(JSON.stringify(req.session.user));
     } else {
       res.status(400).send("No session data found");
     }
@@ -183,7 +174,7 @@ app.post("/login", async (req, res) => {
       .cookie("token", token, {
         httpOnly: true,
         secure: false,
-        maxAge: 600000, // 1 hour
+        maxAge: 3600000, // 1 hour
       })
       .status(200)
       .json({ message: "Successfully logged in with token: " + token });
@@ -279,5 +270,17 @@ app.post("/test", async (req, res) => {
     res.status(200).json("registered");
   } catch (err) {
     res.status(500).send({ err });
+  }
+});
+
+app.post("/update-user", async (req, res) => {
+  const { id } = req.body;
+  try {
+    UserModel.findOne(id).then((doc) => {
+      doc.save();
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send();
   }
 });

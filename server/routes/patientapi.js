@@ -4,7 +4,7 @@ import DoctorModel from "../models/doctor.js";
 import PatientModel from "../models/patient.js";
 
 const patientRouter = express.Router();
-let application = {};
+
 patientRouter.delete("/remove-user:id", async function (req, res) {
   const { id } = req.params;
   try {

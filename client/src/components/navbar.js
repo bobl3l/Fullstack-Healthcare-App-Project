@@ -32,28 +32,37 @@ export default function NavBar() {
   const location = useLocation();
   const navigate = useNavigate();
   useEffect(() => {
-    const fetch = async () => {
+    // Fetch user data from the API
+    const fetchUserData = async () => {
       try {
-        await axios.get("http://localhost:5000/fetch-user").then((res) => {
-          setCurrentUser(res.data);
-          console.log(res.data);
-        });
-      } catch (e) {
-        console.error(e);
+        const response = await axios.get("http://localhost:5000/fetch-user", {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }); // Replace with your API endpoint
+        setCurrentUser(response.data);
+      } catch (error) {
+        console.error("Error fetching user data:", error);
       }
     };
-    fetch();
+
+    fetchUserData();
   }, []);
+
   async function logOut() {
     await axios
-      .post("http://localhost:5000/logout")
+      .post("http://localhost:5000/logout", {
+        headers: { "Content-Type": "application/json" },
+        withCredentials: true,
+      })
       .then(function (response) {
         if (response.status === 200) {
           setIsLoggedIn(false);
           navigate("/");
           setPromptOpen(false);
         } else {
-          console.log("Login failed.");
+          console.log("Logout failed.");
         }
       })
       .catch((err) => console.log(err));
@@ -200,7 +209,7 @@ export default function NavBar() {
             <div className="flex-row flex">
               <button
                 onClick={() => setPromptOpen(false)}
-                className="btn btn-cancel"
+                className="btn bg-gray-600 text-white"
               >
                 Close
               </button>

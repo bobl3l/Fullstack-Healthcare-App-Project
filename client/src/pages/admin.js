@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import UserManagement from "../components/database";
 import ApplicationManagement from "../components/applications";
 const AdminDashboard = () => {

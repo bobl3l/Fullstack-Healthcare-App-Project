@@ -10,7 +10,12 @@ const Profile = () => {
     // Fetch user data from the API
     const fetchUserData = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/fetch-user"); // Replace with your API endpoint
+        const response = await axios.get("http://localhost:5000/fetch-user", {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }); // Replace with your API endpoint
         setUserData(response.data);
         setEditableData(response.data); // Initialize editable data
       } catch (error) {
@@ -27,7 +32,6 @@ const Profile = () => {
   };
 
   const saveChanges = async () => {
-
     try {
       await axios.put("http://localhost:5000/api/user", editableData); // Replace with your API endpoint
       setUserData(editableData); // Update displayed data
@@ -41,7 +45,7 @@ const Profile = () => {
 
   return (
     <div style={styles.container}>
-      <h1>User Profile</h1>
+      <h1 className="font-black text-3xl py-5">User Profile</h1>
       {Object.keys(userData).map((key) => (
         <div style={styles.field} key={key}>
           <strong style={styles.title}>{key}:</strong>
@@ -54,7 +58,9 @@ const Profile = () => {
               style={styles.input}
             />
           ) : (
-            <span style={styles.value}>{userData[key]}</span>
+            <span style={styles.value}>
+              {key === "password" ? "********" : userData[key]}
+            </span>
           )}
         </div>
       ))}
@@ -87,7 +93,7 @@ const Profile = () => {
 const styles = {
   container: {
     maxWidth: "600px",
-    margin: "0 auto",
+    margin: "5vh auto",
     padding: "20px",
     border: "1px solid #ccc",
     borderRadius: "10px",

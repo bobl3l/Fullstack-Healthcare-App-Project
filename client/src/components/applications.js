@@ -1,30 +1,32 @@
-import React, { useState } from "react";
-
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 const ApplicationManagement = () => {
-  const [applications, setApplications] = useState([
-    {
-      id: 1,
-      name: "Job Application A",
-      experience: "5 years",
-      specialization: "Cardiology",
-      status: "pending",
-    },
-    {
-      id: 2,
-      name: "Job Application B",
-      experience: "3 years",
-      specialization: "Neurology",
-      status: "pending",
-    },
-  ]);
-  const handleAction = (id, action) => {
+  const [applications, setApplications] = useState([]);
+
+  useEffect(() => {
+    const fetchapp = async () => {
+      try {
+        await axios
+          .get("http://localhost:5000/admin/get-applications")
+          .then((res) => {
+            setApplications(res.data);
+            console.log(res.data);
+          });
+      } catch (e) {
+        console.error(e);
+      }
+    };
+    fetchapp();
+  }, []);
+
+  const handleAction = async (id, action) => {
     //-
     setApplications(
       //-
       applications.map(
         (
           app //-
-        ) => (app.id === id ? { ...app, status: action } : app) //-
+        ) => (app.id === id ? { ...app, approval: action } : app) //-
       ) //-
     ); //-
   }; //-
@@ -47,9 +49,9 @@ const ApplicationManagement = () => {
               <td className="py-2">{app.name}</td>
               <td className="py-2">{app.experience}</td>
               <td className="py-2">{app.specialization}</td>
-              <td className="py-2">{app.status}</td>
+              <td className="py-2">{app.approval}</td>
               <td className="py-2">
-                {app.status === "pending" && (
+                {app.approval === "pending" && (
                   <>
                     <button
                       onClick={() => handleAction(app.id, "accepted")}

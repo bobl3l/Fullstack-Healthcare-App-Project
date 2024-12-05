@@ -1,14 +1,24 @@
-import React, { useState } from "react";
-
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 const UserManagement = () => {
-  const [users, setUsers] = useState([
-    { id: 1, username: "JohnDoe", email: "john@example.com", role: "admin" },
-    { id: 2, username: "JaneSmith", email: "jane@example.com", role: "user" },
-  ]);
+  const [users, setUsers] = useState([]);
 
   const [selectedUser, setSelectedUser] = useState(null); // For editing user
   const [isEditing, setIsEditing] = useState(false); // Modal state
 
+  useEffect(() => {
+    const fetchuser = async () => {
+      try {
+        await axios.get("http://localhost:5000/admin/get-users").then((res) => {
+          setUsers(res.data);
+          console.log(res.data);
+        });
+      } catch (e) {
+        console.error(e);
+      }
+    };
+    fetchuser();
+  }, []);
   const handleDelete = (id) => {
     setUsers(users.filter((user) => user.id !== id));
   };

@@ -5,6 +5,27 @@ import PatientModel from "../models/patient.js";
 
 const adminRouter = express.Router();
 let application = {};
+
+adminRouter.get("/get-users", async function (req, res) {
+  try {
+    const users = await UserModel.find();
+    res.json(users);
+  } catch (e) {
+    console.error(e);
+    res.status(500).send(e);
+  }
+});
+
+adminRouter.get("/get-applications", async function (req, res) {
+  try {
+    const applications = await DoctorModel.find({ approval: "pending" });
+    res.json(applications);
+  } catch (e) {
+    console.error(e);
+    res.status(500).send(e);
+  }
+});
+
 adminRouter.delete("/remove-user:id", async function (req, res) {
   const { id } = req.params;
   try {
@@ -31,7 +52,7 @@ adminRouter.post("/edit-user", function (req, res) {
   const { id } = req.body;
   try {
     UserModel.findOne(id).then((doc) => {
-      doc.remove();
+      doc.save();
     });
   } catch (err) {
     console.error(err);
