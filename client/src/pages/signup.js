@@ -64,11 +64,11 @@ const Signup = () => {
           : [...prevAllergies, option] // Add if not selected
     );
   };
-  async function handleSubmit(event) {
+  function handleSubmit(event) {
     event.preventDefault();
     formData.allergy = Allergies;
     console.log(formData);
-    await axios
+    axios
       .post("http://localhost:5000/register", formData)
       .then(function (response) {
         if (response.status === 200) {

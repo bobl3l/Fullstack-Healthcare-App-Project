@@ -62,30 +62,19 @@ const DoctorCard = ({ name, image, details, specialization, experience }) => {
                 <div className="flex flex-row space-x-4">
                   <div className="text-left my-8 space-y-7 flex flex-col">
                     <label style={{ fontWeight: "bold", alignSelf: "center" }}>
-                      Date:
+                      DateTime:
                     </label>
-                    <label style={{ fontWeight: "bold", alignSelf: "center" }}>
-                      Time:
-                    </label>
+
                     <label style={{ fontWeight: "bold", alignSelf: "center" }}>
                       Remarks:
                     </label>
                   </div>
                   <div className="text-left m-8 space-y-5">
                     <input
-                      type="date"
+                      type="datetime-local"
                       required
                       style={{
-                        marginLeft: "10px",
-                        backgroundColor: "rgba(128,128,128,0.1",
-                        borderRadius: "5px",
-                        padding: "2px",
-                      }}
-                    />{" "}
-                    <input
-                      type="time"
-                      required
-                      style={{
+                        width: "83.5%",
                         marginLeft: "10px",
                         backgroundColor: "rgba(128,128,128,0.1",
                         borderRadius: "5px",
@@ -104,6 +93,7 @@ const DoctorCard = ({ name, image, details, specialization, experience }) => {
                   </div>
                 </div>
               </div>
+              <input type="hidden" value={name} />
               <div className="flex-row justify-end">
                 <button
                   onClick={() => setBookingModalOpen(false)}

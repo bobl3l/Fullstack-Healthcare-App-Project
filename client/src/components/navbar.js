@@ -42,6 +42,7 @@ export default function NavBar() {
           withCredentials: true,
         }); // Replace with your API endpoint
         setCurrentUser(response.data);
+        console.log(response.data);
       } catch (error) {
         console.error("Error fetching user data:", error);
       }

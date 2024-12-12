@@ -46,7 +46,6 @@ const Chatbox = () => {
       {isOpen && (
         <div className="chatbox">
           <div className="chatbox-sidebar">
-            <h4>Users</h4>
             <ul>
               {users.map((user) => (
                 <li

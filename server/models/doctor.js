@@ -8,7 +8,6 @@ const DoctorSchema = new mongoose.Schema({
   experience: { type: String, required: true },
   approval: { type: String, required: true },
   details: { type: String },
-  appointments: { type: Array },
   profile: { type: String },
 });
 

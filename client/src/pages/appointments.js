@@ -1,35 +1,97 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import "./style.css";
 import { AuthContext } from "../components/AuthContext";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
+function classNames(...classes) {
+  return classes.filter(Boolean).join(" ");
+}
 const Appointments = () => {
-  const [appointments, setAppointments] = useState([
-    { id: 1, doctor: "Dr. John Doe", date: "2024-12-01", time: "10:00 AM" },
-    { id: 2, doctor: "Dr. Jane Smith", date: "2024-12-02", time: "2:00 PM" },
-    { id: 3, doctor: "Dr. Emily White", date: "2024-12-03", time: "11:30 AM" },
-  ]);
-
+  const [appointments, setAppointments] = useState([]);
+  const [remainingTime, setRemainingTime] = useState(null);
   const [editingAppointment, setEditingAppointment] = useState(null);
   const [isLoggedIn] = useContext(AuthContext);
+  const [isActive, setIsActive] = useState(false);
+  const navigate = useNavigate();
+  useEffect(() => {
+    const fetch = async () => {
+      try {
+        await axios
+          .get("http://localhost:5000/fetch-appointments", {
+            headers: { "Content-Type": "application/json" },
+            withCredentials: true,
+          })
+          .then((res) => {
+            setAppointments(res.data);
+            console.log(res.data);
+          });
+      } catch (e) {
+        console.error(e);
+      }
+    };
+    fetch();
+    const interval = setInterval(fetch, 1000); // Poll every second
 
-  // Handle edit submission
-  const handleEditSubmit = (id, updatedDate, updatedTime) => {
-    setAppointments((prev) =>
-      prev.map((appointment) =>
-        appointment.id === id
-          ? { ...appointment, date: updatedDate, time: updatedTime }
-          : appointment
-      )
+    return () => clearInterval(interval);
+  }, []);
+
+  const formatTime = (ms) => {
+    if (ms <= 0) {
+      setIsActive(true);
+      return "00:00:00";
+    }
+    const totalSeconds = Math.floor(ms / 1000);
+    const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, "0");
+    const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(
+      2,
+      "0"
     );
-    setEditingAppointment(null);
+    const seconds = String(totalSeconds % 60).padStart(2, "0");
+    return `${hours}:${minutes}:${seconds}`;
   };
+  // Handle edit submission
+  async function handleEditSubmit(id, updatedDate) {
+    await axios
+      .post("http://localhost:5000/update-appointment", {
+        headers: { "Content-Type": "application/json" },
+        withCredentials: true,
+      })
+      .then(function (response) {
+        if (response.status === 200) {
+          setAppointments((prev) =>
+            prev.map((appointment) =>
+              appointment.id === id
+                ? { ...appointment, date: updatedDate }
+                : appointment
+            )
+          );
+          setEditingAppointment(null);
+        } else {
+          console.log("delete failed.");
+        }
+      })
+      .catch((err) => console.log(err));
+  }
 
   // Handle cancel appointment
-  const handleCancel = (id) => {
-    setAppointments((prev) =>
-      prev.filter((appointment) => appointment.id !== id)
-    );
-  };
+  async function handleCancel(id) {
+    await axios
+      .post("http://localhost:5000/delete-appointment", {
+        headers: { "Content-Type": "application/json" },
+        withCredentials: true,
+      })
+      .then(function (response) {
+        if (response.status === 200) {
+          setAppointments((prev) =>
+            prev.filter((appointment) => appointment.id !== id)
+          );
+        } else {
+          console.log("delete failed.");
+        }
+      })
+      .catch((err) => console.log(err));
+  }
 
   return (
     <div className="appointment-list">
@@ -46,7 +108,21 @@ const Appointments = () => {
               <div>
                 <strong>Doctor:</strong> {appointment.doctor} <br />
                 <strong>Date:</strong> {appointment.date} <br />
-                <strong>Time:</strong> {appointment.time}
+                <p>
+                  {isActive
+                    ? "Call is active"
+                    : `Time remaining: ${formatTime(remainingTime)}`}
+                </p>
+                <button
+                  className={classNames(
+                    isActive ? "bg-green-200" : "bg-gray-300",
+                    "p-2 rounded-md"
+                  )}
+                  disabled={!isActive}
+                  onClick={() => navigate("/videocall")}
+                >
+                  Join Call
+                </button>
               </div>
               <div className="appointment-actions">
                 <button
@@ -66,7 +142,7 @@ const Appointments = () => {
           ))}
         </ul>
       ) : (
-        <p>No appointments scheduled.</p>
+        <center>No appointments scheduled.</center>
       )}
       {/* Edit Modal */}
       {editingAppointment && (
@@ -77,33 +153,19 @@ const Appointments = () => {
               onSubmit={(e) => {
                 e.preventDefault();
                 const updatedDate = e.target.date.value;
-                const updatedTime = e.target.time.value;
-                handleEditSubmit(
-                  editingAppointment.id,
-                  updatedDate,
-                  updatedTime
-                );
+                handleEditSubmit(editingAppointment.id, updatedDate);
               }}
             >
               <div>
                 <label>Date:</label>
                 <input
-                  type="date"
+                  type="datetime-local"
                   name="date"
                   defaultValue={editingAppointment.date}
                   required
                 />
               </div>
-              <div>
-                <label>Time:</label>
-                <input
-                  type="time"
-                  step="1800"
-                  name="time"
-                  defaultValue={editingAppointment.time}
-                  required
-                />
-              </div>
+
               <div className="modal-buttons">
                 <button
                   type="button"

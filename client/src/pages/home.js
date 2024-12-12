@@ -88,8 +88,8 @@ const Home = () => {
   return (
     <>
       <div>
-        <div className="flex justify-center items-center  rounded-3xl">
-          <img src={LandingPage} />
+        <div className="flex justify-center items-center  rounded-3xl m-5">
+          <img src={LandingPage} className="rounded-3xl" />
           <button
             onMouseDown={() => setIsModalOpen(true)}
             className="absolute left-24 top-1/2 bg-cyan-100 text-cyan-600 p-5 font-bold text-center text-3xl rounded-xl px-10 my-10 hover:bg-cyan-700 hover:text-white duration-300"

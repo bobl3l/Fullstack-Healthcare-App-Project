@@ -3,6 +3,7 @@ import connectDB from "./db.js";
 import UserModel from "./models/user.js";
 import PatientModel from "./models/patient.js";
 import DoctorModel from "./models/doctor.js";
+import AppointmentModel from "./models/appointment.js";
 import path from "path";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
@@ -13,10 +14,11 @@ import cookieParser from "cookie-parser";
 import adminRouter from "./routes/adminapi.js";
 import patientRouter from "./routes/patientapi.js";
 import doctorRouter from "./routes/doctorapi.js";
-
+import { Server } from "socket.io";
 import router from "./pwreset.js";
 import cors from "cors";
 import session from "express-session";
+import http from "http";
 dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -57,7 +59,47 @@ app.use(
 );
 
 connectDB();
+const server = http.createServer(app);
+const io = new Server(server);
 
+app.use(express.static("public")); // Serve static files for frontend
+
+io.on("connection", async (socket) => {
+  console.log("User connected:", socket.id);
+
+  // Update user socketId in MongoDB
+  socket.on("register", async (userId) => {
+    await User.findByIdAndUpdate(userId, { socketId: socket.id });
+  });
+
+  // Handle WebRTC signaling
+  socket.on("offer", async ({ from, to, sdp }) => {
+    const recipient = await User.findById(to);
+    if (recipient?.socketId) {
+      io.to(recipient.socketId).emit("offer", { from, sdp });
+    }
+  });
+
+  socket.on("answer", async ({ from, to, sdp }) => {
+    const recipient = await User.findById(to);
+    if (recipient?.socketId) {
+      io.to(recipient.socketId).emit("answer", { from, sdp });
+    }
+  });
+
+  socket.on("ice-candidate", async ({ from, to, candidate }) => {
+    const recipient = await User.findById(to);
+    if (recipient?.socketId) {
+      io.to(recipient.socketId).emit("ice-candidate", { from, candidate });
+    }
+  });
+
+  // Handle disconnection
+  socket.on("disconnect", async () => {
+    console.log("User disconnected:", socket.id);
+    await User.updateOne({ socketId: socket.id }, { $unset: { socketId: "" } });
+  });
+});
 app.get("/passwordreset", function (req, res) {
   res.render("../pages/passwordreset");
 });
@@ -279,6 +321,73 @@ app.post("/update-user", async (req, res) => {
     UserModel.findOne(id).then((doc) => {
       doc.save();
     });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send();
+  }
+});
+app.get("/fetch-appointments", async (req, res) => {
+  try {
+    if (req.session.user && req.session.user.name) {
+      const appointment = await AppointmentModel.find({
+        $or: [
+          { doctor: req.session.user.name },
+          { patient: req.session.user.name },
+        ],
+      });
+      res.json(appointment);
+    }
+  } catch (e) {
+    console.error(e);
+    res.status(500).send(e);
+  }
+});
+app.post("/make-appointment", async (req, res) => {
+  const { doctor, patient, date, remarks } = req.body;
+  try {
+    const updatepatient = await PatientModel.findOne({ name: patient });
+    if (!updatepatient) {
+      return res.status(404).send({ message: "Patient not found." });
+    }
+    const updatedoctor = await DoctorModel.findOne({ name: doctor });
+    if (!updatedoctor) {
+      return res.status(404).send({ message: "Doctor not found." });
+    }
+    const newappointment = new AppointmentModel({
+      doctor,
+      patient,
+      date,
+      remarks,
+    });
+    await newappointment.save();
+    res.status(200).json("Appointment made.");
+  } catch (err) {
+    console.error(err);
+    res.status(500).send();
+  }
+});
+
+app.post("/update-appointment", async (req, res) => {
+  const { id, updateDate } = req.body;
+  try {
+    await AppointmentModel.findByIdAndUpupdateDate(
+      { id },
+      { date: updateDate },
+      { new: true }
+    );
+
+    res.status(200).json("Appointment updated.");
+  } catch (err) {
+    console.error(err);
+    res.status(500).send();
+  }
+});
+
+app.post("/delete-appointment", async (req, res) => {
+  const { id } = req.body;
+  try {
+    await AppointmentModel.findByIdAndDelete(id);
+    res.status(200).json("Appointment deleted.");
   } catch (err) {
     console.error(err);
     res.status(500).send();

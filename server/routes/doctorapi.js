@@ -5,7 +5,7 @@ import PatientModel from "../models/patient.js";
 
 const doctorRouter = express.Router();
 let application = {};
-doctorRouter.delete("/remove-user:id", async function (req, res) {
+doctorRouter.delete("/fetch-appointments", async function (req, res) {
   const { id } = req.params;
   try {
     const user = await UserModel.findOne(id);
@@ -24,6 +24,18 @@ doctorRouter.delete("/remove-user:id", async function (req, res) {
   } catch (err) {
     console.error(err);
     res.status(500).send();
+  }
+});
+
+doctorRouter.get("/fetch-user", async (req, res) => {
+  try {
+    if (req.session.user) {
+      res.send(JSON.stringify(req.session.user));
+    } else {
+      res.status(400).send("No session data found");
+    }
+  } catch (e) {
+    console.error(e);
   }
 });
 
