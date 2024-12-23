@@ -19,6 +19,9 @@ import router from "./pwreset.js";
 import cors from "cors";
 import session from "express-session";
 import http from "http";
+import passport from "passport";
+import { GoogleStrategy } from "passport-google-oauth20";
+
 dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -64,6 +67,7 @@ const io = new Server(server);
 
 app.use(express.static("public")); // Serve static files for frontend
 
+// Socket.IO events for video calls and messaging
 io.on("connection", async (socket) => {
   console.log("User connected:", socket.id);
 
@@ -99,6 +103,40 @@ io.on("connection", async (socket) => {
     console.log("User disconnected:", socket.id);
     await User.updateOne({ socketId: socket.id }, { $unset: { socketId: "" } });
   });
+});
+passport.use(
+  new GoogleStrategy(
+    {
+      clientID: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      callbackURL: "/auth/google/callback",
+    },
+    async (accessToken, refreshToken, profile, done) => {
+      const { id, emails, displayName, photos } = profile;
+      try {
+        let user = await UserModel.findOne({ email: emails });
+        if (!user) {
+          user = new UserModel({
+            googleId: id,
+            email: emails[0].value,
+            name: displayName,
+            avatar: photos[0].value,
+          });
+          await user.save();
+        }
+        done(null, user);
+      } catch (error) {
+        done(error, null);
+      }
+    }
+  )
+);
+
+// Serialize and Deserialize User
+passport.serializeUser((user, done) => done(null, user.id));
+passport.deserializeUser(async (id, done) => {
+  const user = await User.findById(id);
+  done(null, user);
 });
 app.get("/passwordreset", function (req, res) {
   res.render("../pages/passwordreset");

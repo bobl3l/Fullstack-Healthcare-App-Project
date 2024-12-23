@@ -14,27 +14,33 @@ import AdminDashboard from "./pages/admin";
 import DoctorDashboard from "./pages/doctor";
 import VideoCall from "./components/videocall";
 import Chatbox from "./components/chatbox";
+import { GoogleOAuthProvider } from "@react-oauth/google";
+
 const App = () => {
+  const CLIENT_ID =
+    "153520294948-1p9noi9bjtp2o6pq0055i6to56ajjc25.apps.googleusercontent.com";
   return (
-    <AuthProvider>
-      <Router>
-        <NavBar></NavBar>
-        {/* Routes */}
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/doctor" element={<Doctor />} />
-          <Route path="/appointments" element={<Appointments />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/passwordreset" element={<Pwreset />} />
-          <Route path="/admindashboard" element={<AdminDashboard />} />
-          <Route path="/doctordashboard" element={<DoctorDashboard />} />
-          <Route path="/videocall" element={<VideoCall />} />
-        </Routes>
-      </Router>
-      <Chatbox />
-    </AuthProvider>
+    <GoogleOAuthProvider clientId={CLIENT_ID}>
+      <AuthProvider>
+        <Router>
+          <NavBar></NavBar>
+          {/* Routes */}
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/doctor" element={<Doctor />} />
+            <Route path="/appointments" element={<Appointments />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/passwordreset" element={<Pwreset />} />
+            <Route path="/admindashboard" element={<AdminDashboard />} />
+            <Route path="/doctordashboard" element={<DoctorDashboard />} />
+            <Route path="/videocall" element={<VideoCall />} />
+          </Routes>
+        </Router>
+        <Chatbox />
+      </AuthProvider>
+    </GoogleOAuthProvider>
   );
 };
 

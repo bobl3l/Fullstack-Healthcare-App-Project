@@ -4,8 +4,12 @@ import Logo from "../components/logo";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../components/AuthContext";
+import { GoogleLogin } from "@react-oauth/google";
+
 const Login = () => {
   const navigate = useNavigate();
+  const [user, setUser] = useState(null);
+
   const [post, setPost] = useState({
     username: "",
     password: "",
@@ -35,7 +39,18 @@ const Login = () => {
       navigate("/");
     }
   }, [isLoggedIn, navigate]);
-
+  const handleLoginSuccess = async (credentialResponse) => {
+    try {
+      const res = await axios.post(
+        "http://localhost:5000/auth/google/callback",
+        { token: credentialResponse.credential },
+        { withCredentials: true }
+      );
+      setUser(res.data);
+    } catch (error) {
+      console.error("Login failed", error);
+    }
+  };
   return (
     <div className="login">
       <Logo />
@@ -65,6 +80,10 @@ const Login = () => {
         <br />
         <br />
         <input type="submit" value="login" />
+        <GoogleLogin
+          onSuccess={handleLoginSuccess}
+          onError={() => console.error("Login Failed")}
+        />
         <a
           className="link justify-center"
           href="/signup"
