@@ -1,77 +1,84 @@
-import React, { useRef, useEffect } from "react";
-import { io } from "socket.io-client";
-import "../index.css";
+import React, { useEffect, useRef, useState } from "react";
+import io from "socket.io-client";
 
-const socket = io("http://localhost:3000");
+const socket = io("http://localhost:3000"); // Replace with backend URL
 
 const VideoCall = ({ roomId }) => {
   const localVideoRef = useRef(null);
   const remoteVideoRef = useRef(null);
-  const peerConnectionRef = useRef(
-    new RTCPeerConnection({
-      iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
-    })
-  );
+  const peerConnectionRef = useRef(null);
+
+  const [isCallStarted, setIsCallStarted] = useState(false);
 
   useEffect(() => {
-    const startLocalStream = async () => {
-      const localStream = await navigator.mediaDevices.getUserMedia({
-        video: true,
-        audio: true,
-      });
-      localVideoRef.current.srcObject = localStream;
+    const peerConnection = new RTCPeerConnection({
+      iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+    });
+    peerConnectionRef.current = peerConnection;
 
-      localStream
-        .getTracks()
-        .forEach((track) =>
-          peerConnectionRef.current.addTrack(track, localStream)
-        );
-
-      peerConnectionRef.current.ontrack = (event) => {
-        remoteVideoRef.current.srcObject = event.streams[0];
-      };
-
-      peerConnectionRef.current.onicecandidate = (event) => {
-        if (event.candidate) {
-          socket.emit("ice-candidate", { roomId, candidate: event.candidate });
-        }
-      };
+    // Handle ICE Candidate
+    peerConnection.onicecandidate = (event) => {
+      if (event.candidate) {
+        socket.emit("ice-candidate", { roomId, candidate: event.candidate });
+      }
     };
 
-    startLocalStream();
+    // Handle Remote Stream
+    peerConnection.ontrack = (event) => {
+      remoteVideoRef.current.srcObject = event.streams[0];
+    };
 
-    socket.emit("join-room", { roomId });
+    // Join Room
+    socket.emit("join-room", roomId);
 
-    socket.on("offer", async (sdp) => {
-      await peerConnectionRef.current.setRemoteDescription(
-        new RTCSessionDescription(sdp)
-      );
-      const answer = await peerConnectionRef.current.createAnswer();
-      await peerConnectionRef.current.setLocalDescription(answer);
-      socket.emit("answer", { roomId, sdp: answer });
+    socket.on("user-joined", () => {
+      setIsCallStarted(true);
     });
 
-    socket.on("answer", async (sdp) => {
-      await peerConnectionRef.current.setRemoteDescription(
-        new RTCSessionDescription(sdp)
+    socket.on("offer", async ({ from, offer }) => {
+      await peerConnection.setRemoteDescription(
+        new RTCSessionDescription(offer)
+      );
+      const answer = await peerConnection.createAnswer();
+      await peerConnection.setLocalDescription(answer);
+      socket.emit("answer", { roomId, answer });
+    });
+
+    socket.on("answer", async ({ answer }) => {
+      await peerConnection.setRemoteDescription(
+        new RTCSessionDescription(answer)
       );
     });
 
-    socket.on("ice-candidate", async (candidate) => {
+    socket.on("ice-candidate", async ({ candidate }) => {
       if (candidate) {
-        await peerConnectionRef.current.addIceCandidate(
-          new RTCIceCandidate(candidate)
-        );
+        await peerConnection.addIceCandidate(candidate);
       }
     });
+
+    // Cleanup on Component Unmount
+    return () => {
+      peerConnection.close();
+      socket.disconnect();
+    };
   }, [roomId]);
 
   const startCall = async () => {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: true,
+      audio: true,
+    });
+    localVideoRef.current.srcObject = stream;
+
+    stream.getTracks().forEach((track) => {
+      peerConnectionRef.current.addTrack(track, stream);
+    });
+
     const offer = await peerConnectionRef.current.createOffer();
     await peerConnectionRef.current.setLocalDescription(offer);
-    socket.emit("offer", { roomId, sdp: offer });
-  };
 
+    socket.emit("offer", { roomId, offer });
+  };
   return (
     <div>
       <center>
@@ -80,10 +87,15 @@ const VideoCall = ({ roomId }) => {
             className="m-10 rounded-2xl border-gray-400 border-4"
             ref={localVideoRef}
             autoPlay
+            playsInline
             muted
           ></video>
-
-          <video ref={remoteVideoRef} autoPlay></video>
+          <video
+            className="m-10 rounded-2xl border-gray-400 border-4"
+            ref={remoteVideoRef}
+            autoPlay
+            playsInline
+          ></video>
         </div>
         <button
           className="bg-sky-700 text-white rounded-md p-5"
