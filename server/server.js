@@ -20,7 +20,7 @@ import cors from "cors";
 import session from "express-session";
 import http from "http";
 import passport from "passport";
-import { GoogleStrategy } from "passport-google-oauth20";
+import GoogleStrategy from "passport-google-oauth20";
 
 dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
@@ -135,7 +135,7 @@ passport.use(
 // Serialize and Deserialize User
 passport.serializeUser((user, done) => done(null, user.id));
 passport.deserializeUser(async (id, done) => {
-  const user = await User.findById(id);
+  const user = await UserModel.findById(id);
   done(null, user);
 });
 app.get("/passwordreset", function (req, res) {

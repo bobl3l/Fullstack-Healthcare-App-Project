@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import UserManagement from "../components/database";
 import ApplicationManagement from "../components/applications";
+import Analytics from "../components/adminMetrics";
 const AdminDashboard = () => {
   const [currentView, setCurrentView] = useState("users"); // Toggle between 'users' and 'applications'
 
@@ -27,10 +28,21 @@ const AdminDashboard = () => {
         >
           Manage Applications
         </button>
+        <button
+          onClick={() => setCurrentView("metrics")}
+          className={`px-4 py-2 w-full my-4 rounded ${
+            currentView === "metrics"
+              ? "bg-slate-600 text-white"
+              : "bg-gray-200"
+          }`}
+        >
+          Analytics Metrics
+        </button>
       </div>
       <div className="bg-slate-50 my-10 mx-4 p-4 w-full  rounded shadow">
         {currentView === "users" && <UserManagement />}
         {currentView === "applications" && <ApplicationManagement />}
+        {currentView === "metrics" && <Analytics />}
       </div>
     </div>
   );
