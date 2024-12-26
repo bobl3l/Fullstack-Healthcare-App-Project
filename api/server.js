@@ -76,6 +76,7 @@ const io = new Server(server, {
 
 app.use(express.static("public")); // Serve static files for frontend
 let connectedUsers = 0; // Variable to track the number of connected users
+const rooms = {};
 
 // Socket.IO events for video calls and messaging
 io.on("connection", (socket) => {
@@ -83,12 +84,22 @@ io.on("connection", (socket) => {
   console.log("User connected:", socket.id);
   console.log(`Total users: ${connectedUsers}`);
 
-  socket.on("join-room", (roomId) => {
+  socket.on("join-room", ({ roomId, userId }) => {
     console.log(`User joined room: ${roomId}`);
-    socket.join(roomId);
-    socket.to(roomId).emit("user-joined", socket.id);
-  });
+    if (!rooms[roomId]) rooms[roomId] = [];
+    rooms[roomId].push(userId);
 
+    socket.join(roomId);
+    socket.to(roomId).emit("user-connected", userId);
+
+    socket.on("disconnect", () => {
+      rooms[roomId] = rooms[roomId].filter((id) => id !== userId);
+      socket.to(roomId).emit("user-disconnected", userId);
+    });
+  });
+  socket.on("signal", ({ roomId, signal, targetId }) => {
+    io.to(targetId).emit("signal", { signal, userId: socket.id });
+  });
   socket.on("offer", ({ roomId, offer }) => {
     socket.to(roomId).emit("offer", { from: socket.id, offer });
   });

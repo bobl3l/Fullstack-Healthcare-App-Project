@@ -11,7 +11,6 @@ const DoctorDashboard = () => {
   const [appointments, setAppointments] = useState([]);
   const [isLoggedIn] = useContext(AuthContext);
   const [editingAppointment, setEditingAppointment] = useState(null);
-  const [isActive, setIsActive] = useState(false);
 
   const navigate = useNavigate();
   useEffect(() => {
@@ -24,6 +23,7 @@ const DoctorDashboard = () => {
             withCredentials: true,
           }
         );
+        console.log(res.data);
         setAppointments(res.data);
       } catch (e) {
         console.error(e);
@@ -132,7 +132,11 @@ const DoctorDashboard = () => {
                   disabled={!appointment.isActive}
                   onClick={() => navigate(`/videocall/${appointment.socketId}`)}
                 >
-                  Join Call
+                  {appointment.isActive ? (
+                    <p>Join Call</p>
+                  ) : (
+                    <p>Call Inactive</p>
+                  )}
                 </button>
               </div>
 

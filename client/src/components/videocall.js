@@ -1,289 +1,188 @@
-import { useRef, useEffect, useState } from "react";
-import { FiVideo, FiVideoOff, FiMic, FiMicOff } from "react-icons/fi";
-import {
-  FaMicrophone,
-  FaMicrophoneSlash,
-  FaVideo,
-  FaVideoSlash,
-  FaPhone,
-  FaTimes,
-} from "react-icons/fa";
-import { io } from "socket.io-client";
-import Swal from "sweetalert2";
+import React, { useEffect, useRef, useState } from "react";
+import io from "socket.io-client";
+import Peer from "simple-peer";
+import { useParams, useNavigate } from "react-router-dom";
+import { FaMicrophone, FaMicrophoneSlash, FaTimes } from "react-icons/fa";
 
-const socket = io("http://localhost:3000", { transports: ["websocket"] });
-
-const configuration = {
-  iceServers: [
-    {
-      urls: ["stun:stun1.l.google.com:19302", "stun:stun2.l.google.com:19302"],
-    },
-  ],
-  iceCandidatePoolSize: 10,
-};
-
-function App() {
-  const userInfo = 123456; // Assume userId is defined elsewhere
-
-  const pc = useRef(null);
-  const localStream = useRef(null);
-  const startButton = useRef(null);
-  const hangupButton = useRef(null);
-  const muteAudButton = useRef(null);
-  const localVideo = useRef(null);
-  const remoteVideo = useRef(null);
-  const muteVideoButton = useRef(null);
-  const muteVideo = useRef(null);
-
-  socket.on("calling", (e) => {
-    if (!localStream.current) {
-      console.log("not ready yet");
-      return;
-    }
-    switch (e.type) {
-      case "offer":
-        handleOffer(e);
-        break;
-      case "answer":
-        handleAnswer(e);
-        break;
-      case "candidate":
-        handleCandidate(e);
-        break;
-      case "ready":
-        if (pc.current) {
-          alert("already in call ignoring");
-          return;
-        }
-        makeCall();
-        break;
-      case "bye":
-        if (pc.current) {
-          hangup();
-        }
-        break;
-      default:
-        console.log("unhandled", e);
-        break;
-    }
-  });
-
-  async function makeCall() {
-    try {
-      pc.current = new RTCPeerConnection(configuration);
-      pc.current.onicecandidate = (e) => {
-        const message = {
-          type: "candidate",
-          candidate: e.candidate ? e.candidate.candidate : null,
-          sdpMid: e.candidate ? e.candidate.sdpMid : undefined,
-          sdpMLineIndex: e.candidate ? e.candidate.sdpMLineIndex : undefined,
-          id: userInfo,
-        };
-        socket.emit("calling", message);
-      };
-      pc.current.ontrack = (e) =>
-        (remoteVideo.current.srcObject = e.streams[0]);
-      localStream.current
-        .getTracks()
-        .forEach((track) => pc.current.addTrack(track, localStream.current));
-      const offer = await pc.current.createOffer();
-      socket.emit("calling", { id: userInfo, type: "offer", sdp: offer.sdp });
-      await pc.current.setLocalDescription(offer);
-    } catch (e) {
-      console.log(e);
-    }
-  }
-
-  async function handleOffer(offer) {
-    if (pc.current) {
-      console.error("existing peerconnection");
-      return;
-    }
-    try {
-      pc.current = new RTCPeerConnection(configuration);
-      pc.current.onicecandidate = (e) => {
-        const message = {
-          type: "candidate",
-          id: userInfo,
-          candidate: e.candidate ? e.candidate.candidate : null,
-          sdpMid: e.candidate ? e.candidate.sdpMid : undefined,
-          sdpMLineIndex: e.candidate ? e.candidate.sdpMLineIndex : undefined,
-        };
-        socket.emit("calling", message);
-      };
-      pc.current.ontrack = (e) =>
-        (remoteVideo.current.srcObject = e.streams[0]);
-      localStream.current
-        .getTracks()
-        .forEach((track) => pc.current.addTrack(track, localStream.current));
-      await pc.current.setRemoteDescription(offer);
-      const answer = await pc.current.createAnswer();
-      socket.emit("calling", { id: userInfo, type: "answer", sdp: answer.sdp });
-      await pc.current.setLocalDescription(answer);
-    } catch (e) {
-      console.log(e);
-    }
-  }
-
-  async function handleAnswer(answer) {
-    if (!pc.current) {
-      console.error("no peerconnection");
-      return;
-    }
-    try {
-      await pc.current.setRemoteDescription(answer);
-    } catch (e) {
-      console.log(e);
-    }
-  }
-
-  async function handleCandidate(candidate) {
-    try {
-      if (!pc.current) {
-        console.error("no peerconnection");
-        return;
-      }
-      await pc.current.addIceCandidate(candidate ? candidate : null);
-    } catch (e) {
-      console.log(e);
-    }
-  }
-
-  async function hangup() {
-    if (pc.current) {
-      pc.current.close();
-      pc.current = null;
-    }
-    localStream.current.getTracks().forEach((track) => track.stop());
-    localStream.current = null;
-    startButton.current.disabled = false;
-    hangupButton.current.disabled = true;
-    muteAudButton.current.disabled = true;
-    muteVideo.current.disabled = true;
-
-    closeVideoCall();
-  }
+const VideoCall = () => {
+  const socket = io("http://localhost:5000"); // Replace with your server URL
+  const [peers, setPeers] = useState([]);
+  const localVideoRef = useRef();
+  const remoteVideoRefs = useRef({});
+  const userId = useRef(socket.id); // Use ref to persist userId between renders
+  const { roomId } = useParams(); // Fetch the roomId from URL parameters
+  const navigate = useNavigate();
+  const [isMuted, setIsMuted] = useState(false);
 
   useEffect(() => {
-    hangupButton.current.disabled = true;
-    muteAudButton.current.disabled = true;
-    muteVideo.current.disabled = true;
-  }, []);
-
-  const [audioState, setAudio] = useState(true);
-  const [videoState, setVideoState] = useState(true);
-
-  const startB = async () => {
-    try {
-      localStream.current = await navigator.mediaDevices.getUserMedia({
+    const init = async () => {
+      const stream = await navigator.mediaDevices.getUserMedia({
         video: true,
-        audio: { echoCancellation: true },
+        audio: true,
       });
-      localVideo.current.srcObject = localStream.current;
-    } catch (err) {
-      console.log(err);
-    }
 
-    startButton.current.disabled = true;
-    hangupButton.current.disabled = false;
-    muteAudButton.current.disabled = false;
-    muteVideo.current.disabled = false;
+      // Set local video stream
+      localVideoRef.current.srcObject = stream;
 
-    socket.emit("calling", { id: userInfo, type: "ready" });
-  };
+      // Join the room
+      socket.emit("join-room", { roomId, userId: userId.current });
 
-  const hangB = async () => {
-    Swal.fire({
-      title: "Are you sure to cut the call?",
-      showCancelButton: true,
-      confirmButtonText: "Yes",
-      cancelButtonText: "No",
-    }).then((res) => {
-      if (res.isConfirmed) {
-        hangup();
-        socket.emit("calling", { id: userInfo, type: "bye" });
+      // Listen for new user connections
+      socket.on("user-connected", (newUserId) => {
+        const peer = createPeer(newUserId, stream);
+        peer.userId = newUserId;
+        setPeers((prev) => [...prev, peer]);
+      });
+
+      // Listen for incoming signals
+      socket.on("signal", ({ signal, userId: remoteUserId }) => {
+        const peer = peers.find((p) => p.userId === remoteUserId);
+        if (peer) {
+          peer.signal(signal);
+        } else {
+          const newPeer = addPeer(signal, stream, remoteUserId);
+          newPeer.userId = remoteUserId;
+          setPeers((prev) => [...prev, newPeer]);
+        }
+      });
+
+      // Handle user disconnections
+      socket.on("user-disconnected", (disconnectedUserId) => {
+        setPeers((prev) =>
+          prev.filter((peer) => peer.userId !== disconnectedUserId)
+        );
+      });
+
+      return () => {
+        socket.disconnect();
+        stream.getTracks().forEach((track) => track.stop());
+        setPeers([]);
+      };
+    };
+
+    init();
+  }, [roomId]);
+
+  // Create a new peer for the current user to send the offer
+  const createPeer = (newUserId, stream) => {
+    const peer = new Peer({
+      initiator: true,
+      trickle: false,
+      stream,
+    });
+
+    peer.on("signal", (signal) => {
+      socket.emit("signal", { roomId, signal, targetId: newUserId });
+    });
+
+    peer.on("stream", (remoteStream) => {
+      console.log(
+        `Remote stream received from user: ${newUserId}`,
+        remoteStream
+      );
+
+      if (remoteVideoRefs.current[newUserId]) {
+        remoteVideoRefs.current[newUserId].srcObject = remoteStream;
       }
     });
+
+    return peer;
   };
 
-  function muteAudio() {
-    if (localStream.current) {
-      localStream.current.getAudioTracks().forEach((track) => {
-        track.enabled = !track.enabled; // Toggle mute/unmute
-      });
-      setAudio(!audioState); // Update state for UI toggle
-    }
-  }
+  // Add a peer when receiving an offer
+  const addPeer = (incomingSignal, stream, remoteUserId) => {
+    const peer = new Peer({
+      initiator: false,
+      trickle: false,
+      stream,
+    });
 
-  function pauseVideo() {
-    if (localStream.current) {
-      localStream.current.getVideoTracks().forEach((track) => {
-        track.enabled = !track.enabled; // Toggle video track
-      });
-      setVideoState(!videoState); // Update state for UI toggle
-    }
-  }
+    peer.on("signal", (signal) => {
+      socket.emit("signal", { roomId, signal, targetId: remoteUserId });
+    });
+
+    peer.on("stream", (remoteStream) => {
+      console.log(
+        `Remote stream received from user: ${remoteUserId}`,
+        remoteStream
+      );
+
+      if (remoteVideoRefs.current[remoteUserId]) {
+        remoteVideoRefs.current[remoteUserId].srcObject = remoteStream;
+      }
+    });
+
+    peer.signal(incomingSignal);
+    return peer;
+  };
+
+  // Toggle mute functionality
+  const toggleMute = () => {
+    const enabled = localVideoRef.current.srcObject.getAudioTracks()[0].enabled;
+    localVideoRef.current.srcObject.getAudioTracks()[0].enabled = !enabled;
+    setIsMuted(!enabled);
+  };
+
+  // Leave the room
+  const handleLeave = () => {
+    socket.disconnect();
+    setPeers([]);
+    navigate("/");
+  };
 
   return (
-    <div className="bg-white w-screen h-screen fixed top-0 left-0 z-50 flex justify-center items-center">
-      <div className="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4">
-        <div className="flex-1 p-4">
-          <div className="bg-gray-200 h-96 w-full md:w-96 rounded-lg shadow-md">
+    <div>
+      <center>
+        <div className="w-3/4 justify-center pt-40 flex flex-row">
+          <div>
             <video
-              ref={localVideo}
-              className="w-full h-full rounded-lg object-cover"
+              ref={localVideoRef}
               autoPlay
+              muted
               playsInline
-            ></video>
+              className="w-2/3 rounded-xl border-gray-300 border-8"
+            />
+          </div>
+          <div>
+            {peers.map((peer) => (
+              <video
+                key={peer.userId}
+                ref={localVideoRef}
+                autoPlay
+                playsInline
+                className="w-2/3 rounded-xl border-gray-300 border-8"
+              />
+            ))}
           </div>
         </div>
-        <div className="flex-1 p-4">
-          <div className="bg-gray-200 h-96 w-full md:w-96 rounded-lg shadow-md">
-            <video
-              ref={remoteVideo}
-              className="w-full h-full rounded-lg object-cover"
-              autoPlay
-              playsInline
-            ></video>
+        <div>
+          <div className="flex space-x-4 mt-4 justify-center">
+            {/* Mute Button */}
+            <button
+              onClick={toggleMute}
+              className="w-12 h-12 flex items-center justify-center rounded-full bg-gray-200 hover:bg-gray-300"
+              aria-label="Mute"
+            >
+              {isMuted ? (
+                <FaMicrophoneSlash className="text-black w-6 h-6" />
+              ) : (
+                <FaMicrophone className="text-black w-6 h-6" />
+              )}
+            </button>
+
+            {/* Leave Button */}
+            <button
+              onClick={handleLeave}
+              className="w-12 h-12 flex items-center justify-center rounded-full bg-gray-200 hover:bg-gray-300"
+              aria-label="Leave"
+            >
+              <FaTimes className="text-black w-6 h-6" />
+            </button>
           </div>
         </div>
-      </div>
-      <div className="absolute bottom-8 flex justify-center space-x-4">
-        <button
-          className="p-2 rounded-full bg-gray-300 hover:bg-gray-400"
-          ref={muteAudButton}
-          onClick={muteAudio}
-        >
-          {audioState ? <FiMic /> : <FiMicOff />}
-        </button>
-        <button
-          className="p-2 rounded-full bg-gray-300 hover:bg-gray-400"
-          ref={startButton}
-          onClick={startB}
-        >
-          <FaPhone className="text-gray-600" />
-        </button>
-        <button
-          className="p-2 rounded-full bg-gray-300 hover:bg-gray-400"
-          ref={muteVideo}
-          onClick={pauseVideo}
-        >
-          {videoState ? (
-            <FaVideo className="text-gray-600" />
-          ) : (
-            <FaVideoSlash className="text-gray-600" />
-          )}
-        </button>
-        <button
-          className="p-2 rounded-full bg-gray-300 hover:bg-gray-400"
-          ref={hangupButton}
-          onClick={hangB}
-        >
-          <FaTimes className="text-gray-600" />
-        </button>
-      </div>
+      </center>
     </div>
   );
-}
+};
 
-export default App;
+export default VideoCall;

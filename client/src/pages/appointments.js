@@ -11,7 +11,6 @@ const Appointments = () => {
   const [appointments, setAppointments] = useState([]);
   const [isLoggedIn] = useContext(AuthContext);
   const [editingAppointment, setEditingAppointment] = useState(null);
-  const [isActive, setIsActive] = useState(false);
 
   const navigate = useNavigate();
   useEffect(() => {
@@ -24,6 +23,7 @@ const Appointments = () => {
             withCredentials: true,
           }
         );
+        console.log(res.data);
         setAppointments(res.data);
       } catch (e) {
         console.error(e);
