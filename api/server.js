@@ -168,6 +168,10 @@ app.get("/passwordreset", function (req, res) {
   res.render("../pages/passwordreset");
 });
 
+app.get("/", function (req, res) {
+  res.render("Server is running! ^^");
+});
+
 app.get("/check-auth", (req, res) => {
   const token = req.cookies.token;
   if (!token) {
