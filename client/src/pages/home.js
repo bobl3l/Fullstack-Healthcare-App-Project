@@ -19,6 +19,7 @@ import Footer from "../components/footer";
 import LandingPage from "../assets/landingpage.png";
 import AppointmentModal from "../components/appointmentbooking";
 import axios from "axios";
+import Notification from "../components/notification";
 
 const Home = () => {
   const items = [
@@ -41,6 +42,9 @@ const Home = () => {
   ];
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [doctorlist, setDoctorlist] = useState([]);
+  const [user, setUser] = useState(null);
+  const [notification, setNotification] = useState({ message: "", type: "" });
+
   useEffect(() => {
     const fetch = async () => {
       try {
@@ -54,7 +58,33 @@ const Home = () => {
     };
     fetch();
   }, []);
+  useEffect(() => {
+    // Fetch user data from the API
+    const fetchUserData = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/fetch-user", {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }); // Replace with your API endpoint
 
+        setUser(response.data);
+        if (user) {
+          if (user.NewAppointments) {
+            setNotification({
+              message: "You have a new appointment.",
+              type: "info",
+            });
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+
+    fetchUserData();
+  }, []);
   const doctors = [
     {
       id: 1,
@@ -81,9 +111,6 @@ const Home = () => {
       title: "Cardiologist",
     },
   ];
-  const handleModalSubmit = (appointmentData) => {
-    console.log("Appointment Data:", appointmentData);
-  };
 
   return (
     <>
@@ -98,11 +125,21 @@ const Home = () => {
           </button>
         </div>
       </div>
+      {notification.message && (
+        <Notification message={notification.message} type={notification.type} />
+      )}
+      {/* <button
+        onClick={() =>
+          setNotification({ message: "Test notification", type: "info" })
+        }
+        className="fixed z-50 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-blue-500 text-white p-4 rounded-lg shadow-lg hover:bg-blue-600 transition-colors duration-300"
+      >
+        Test Notification
+      </button> */}
       <AppointmentModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         doctors={doctorlist}
-        onSubmit={handleModalSubmit}
       />
       <div className="panel">
         <div className="flex ">

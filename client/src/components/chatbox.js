@@ -16,7 +16,6 @@ const Chatbox = () => {
   const users = [
     { id: "user1", name: "Dr. Samantha Hart" },
     { id: "user2", name: "Dr. Michael Trent" },
-    { id: "user3", name: "Dr. Linda Carter" },
   ];
 
   const toggleChatbox = () => {

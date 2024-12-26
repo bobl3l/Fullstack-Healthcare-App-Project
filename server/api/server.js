@@ -21,7 +21,6 @@ import session from "express-session";
 import http from "http";
 import passport from "passport";
 import GoogleStrategy from "passport-google-oauth20";
-import { v4 as uuidv4 } from "uuid";
 
 dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
@@ -65,23 +64,17 @@ app.use(
 
 connectDB();
 const server = http.createServer(app);
-
 const io = new Server(server, {
   cors: {
     origin: "http://localhost:3000",
-    methods: ["GET", "POST"],
-    credentials: true,
   },
 });
 
 app.use(express.static("public")); // Serve static files for frontend
-let connectedUsers = 0; // Variable to track the number of connected users
 
 // Socket.IO events for video calls and messaging
-io.on("connection", (socket) => {
-  connectedUsers++;
+io.on("connection", async (socket) => {
   console.log("User connected:", socket.id);
-  console.log(`Total users: ${connectedUsers}`);
 
   socket.on("join-room", (roomId) => {
     console.log(`User joined room: ${roomId}`);
@@ -102,23 +95,9 @@ io.on("connection", (socket) => {
   });
 
   socket.on("disconnect", () => {
-    connectedUsers--;
     console.log("User disconnected:", socket.id);
-    console.log(`Total users: ${connectedUsers}`);
   });
-  // socket.disconnect(true);
-  // console.log(`Disconnected user on server start: ${socket.id}`);
 });
-server.listen(PORT, (error) => {
-  if (!error) console.log(`Server is listening on port ${PORT}`);
-  else console.log("Error occurred, server can't start", error);
-});
-
-// app.listen(PORT, (error) => {
-//   if (!error) console.log(`Server is listening on port ${PORT}`);
-//   else console.log("Error occurred, server can't start", error);
-// });
-
 passport.use(
   new GoogleStrategy(
     {
@@ -231,7 +210,6 @@ app.post("/login", async (req, res) => {
       email: user.email,
       role: user.role,
       name: user.name,
-      lastLogin: user.lastLogin,
     };
     if (user.role == "patient") {
       const patient = await PatientModel.findOne({
@@ -247,16 +225,11 @@ app.post("/login", async (req, res) => {
         allergy: patient.allergy,
         appointments: patient.appointments,
         profile: patient.profile,
-        lastLogin: user.lastLogin,
       };
     }
     if (user.role == "doctor") {
       const doctor = await DoctorModel.findOne({
         $or: [{ username: username }, { email: username }],
-      });
-      const newAppointments = await AppointmentModel.find({
-        doctor: user.name,
-        createdAt: { $gt: user.lastLogin || new Date(0) }, // Compare with lastLogin or epoch time
       });
       req.session.user = {
         username: user.username,
@@ -268,8 +241,6 @@ app.post("/login", async (req, res) => {
         details: doctor.details,
         appointments: doctor.appointments,
         profile: doctor.profile,
-        lastLogin: user.lastLogin,
-        NewAppointments: newAppointments.length > 0,
       };
     }
     res
@@ -281,8 +252,6 @@ app.post("/login", async (req, res) => {
       })
       .status(200)
       .json({ message: "Successfully logged in with token: " + token });
-    user.lastLogin = new Date();
-    await user.save();
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal server error" });
@@ -331,7 +300,6 @@ app.post("/register", async (req, res) => {
       }
 
       await user.save();
-      res.status(200).json("User registered successfully");
       console.log("User registered successfully");
     } catch (error) {
       res.status(400).json({ message: error.message });
@@ -344,6 +312,11 @@ app.post("/logout", async (req, res) => {
   req.session.destroy();
   res.status(200).clearCookie("token").json("Logged out successfully");
   console.log("User logged out successfully");
+});
+
+app.listen(PORT, (error) => {
+  if (!error) console.log(`Server is listening on port ${PORT}`);
+  else console.log("Error occurred, server can't start", error);
 });
 
 app.post("/test", async (req, res) => {
@@ -415,7 +388,6 @@ app.post("/make-appointment", async (req, res) => {
       date,
       remarks,
       socketId,
-      createdAt: new Date(),
     });
     await newappointment.save();
 

@@ -35,7 +35,7 @@ const App = () => {
             <Route path="/passwordreset" element={<Pwreset />} />
             <Route path="/admindashboard" element={<AdminDashboard />} />
             <Route path="/doctordashboard" element={<DoctorDashboard />} />
-            <Route path="/videocall" element={<VideoCall />} />
+            <Route path="/videocall/:roomId" element={<VideoCall />} />
           </Routes>
         </Router>
         <Chatbox />

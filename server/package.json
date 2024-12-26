@@ -5,7 +5,8 @@
     "server": "nodemon server.js",
     "client": "cd client && npm start",
     "dev": "concurrently \"npm run server\" \"npm run client\"",
-    "heroku-postbuild": "cd client && npm install && npm run build"
+    "heroku-postbuild": "cd client && npm install && npm run build",
+    "build": "echo 'No build step necessary for this app'"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",
@@ -27,6 +28,7 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "socket.io": "^4.8.1",
+    "uuid": "^11.0.3",
     "uuidv4": "^6.2.13",
     "validatorjs": "^3.22.1"
   },

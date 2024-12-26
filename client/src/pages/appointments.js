@@ -9,38 +9,48 @@ function classNames(...classes) {
 }
 const Appointments = () => {
   const [appointments, setAppointments] = useState([]);
-  const [remainingTime, setRemainingTime] = useState(null);
-  const [editingAppointment, setEditingAppointment] = useState(null);
   const [isLoggedIn] = useContext(AuthContext);
+  const [editingAppointment, setEditingAppointment] = useState(null);
   const [isActive, setIsActive] = useState(false);
+
   const navigate = useNavigate();
   useEffect(() => {
     const fetch = async () => {
       try {
-        await axios
-          .get("http://localhost:5000/fetch-appointments", {
+        const res = await axios.get(
+          "http://localhost:5000/fetch-appointments",
+          {
             headers: { "Content-Type": "application/json" },
             withCredentials: true,
-          })
-          .then((res) => {
-            setAppointments(res.data);
-            console.log(res.data);
-          });
+          }
+        );
+        setAppointments(res.data);
       } catch (e) {
         console.error(e);
       }
     };
     fetch();
-    const interval = setInterval(fetch, 1000); // Poll every second
-
-    return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setAppointments((prevAppointments) =>
+        prevAppointments.map((appointment) => {
+          const appointmentTime = new Date(appointment.date).getTime();
+          const currentTime = new Date().getTime();
+          const timeRemaining = appointmentTime - currentTime;
+
+          return {
+            ...appointment,
+            isActive: timeRemaining <= 0,
+            remainingTime: Math.max(timeRemaining, 0),
+          };
+        })
+      );
+    }, 1000);
+  }, []);
   const formatTime = (ms) => {
-    if (ms <= 0) {
-      setIsActive(true);
-      return "00:00:00";
-    }
+    if (ms <= 0) return "00:00:00";
     const totalSeconds = Math.floor(ms / 1000);
     const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, "0");
     const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(
@@ -107,23 +117,28 @@ const Appointments = () => {
             <li key={appointment.id} className="appointment-item">
               <div>
                 <strong>Doctor:</strong> {appointment.doctor} <br />
-                <strong>Date:</strong> {appointment.date} <br />
+                <strong>Date:</strong>{" "}
+                {appointment.date.replace("T", " ").replace(".000Z", " ")}{" "}
+                <br />
                 <p>
-                  {isActive
+                  {appointment.isActive
                     ? "Call is active"
-                    : `Time remaining: ${formatTime(remainingTime)}`}
+                    : `Time remaining: ${formatTime(
+                        appointment.remainingTime
+                      )}`}
                 </p>
                 <button
                   className={classNames(
-                    isActive ? "bg-green-200" : "bg-gray-300",
+                    appointment.isActive ? "bg-green-200" : "bg-gray-300",
                     "p-2 rounded-md"
                   )}
-                  disabled={!isActive}
-                  onClick={() => navigate("/videocall")}
+                  disabled={!appointment.isActive}
+                  onClick={() => navigate(`/videocall/${appointment.socketId}`)}
                 >
                   Join Call
                 </button>
               </div>
+
               <div className="appointment-actions">
                 <button
                   className="btn btn-edit"

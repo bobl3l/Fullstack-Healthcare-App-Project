@@ -6,6 +6,7 @@ const AppointmentSchema = new mongoose.Schema({
   date: { type: Date, required: true },
   remarks: { type: String, required: true },
   socketId: { type: String, unique: true, required: true },
+  createdAt: { type: Date, default: Date.now() },
 });
 
 // Export model
